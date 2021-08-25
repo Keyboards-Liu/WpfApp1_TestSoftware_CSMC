@@ -16,60 +16,64 @@ namespace WpfApp1_TestSoftware_CSMC
     /// <summary>
     /// SerialBaseUserControl.xaml 的交互逻辑
     /// </summary>
-        public partial class SerialBase : UserControl
+    public partial class SerialBase : UserControl
     {
         #region 定义内部变量
         private SerialPort serial = new SerialPort();
         private string receiveData;
         private DispatcherTimer autoSendTimer = new DispatcherTimer();
         private DispatcherTimer autoDetectionTimer = new DispatcherTimer();
+        private Encoding setEncoding = Encoding.Default;
 
         public static uint receiveBytesCount = 0;
         public static uint sendBytesCount = 0;
-
-        private Encoding setEncoding = Encoding.Unicode;
         #endregion
 
-        #region 初始化/串口检测
+        #region 串口初始化与串口变更检测
         /// <summary>
         /// 串口初始化
         /// </summary>
         public SerialBase()
         {
-            InitializeComponent();// 初始化组件
-            AddPortName();// 检测和添加串口
-            // 设置自动检测50毫秒1次
-            autoDetectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
+            // 初始化组件
+            InitializeComponent();
+            // 检测和添加串口
+            AddPortName();
+            // 开启串口检测定时器，并设置自动检测100毫秒1次
             autoDetectionTimer.Tick += new EventHandler(AutoDetectionTimer_Tick);
-            // 开启定时器
+            autoDetectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             autoDetectionTimer.Start();
             // 设置状态栏提示
             statusTextBlock.Text = "准备就绪";
         }
         /// <summary>
-        /// 检测和添加串口
+        /// 在初始化串口时进行串口检测和添加
         /// </summary>
         private void AddPortName()
         {
             // 检测有效的串口
-            string[] serialPortName = SerialPort.GetPortNames();
-            string[] serialPortNameDistinct = serialPortName.Distinct().ToArray();
-            foreach (string name in serialPortNameDistinct)
+            string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
+            foreach (string name in serialPortName)
             {
                 // 如果检测到的串口不存在于portNameComboBox中，则添加
-                if (portNameComboBox.Items.Contains(name) == false){
+                if (portNameComboBox.Items.Contains(name) == false)
+                {
                     portNameComboBox.Items.Add(name);
                 }
-            }            
+            }
         }
-        private void AutoDetectionTimer_Tick(object sender, EventArgs e)// 自动检测串口时间
+        /// <summary>
+        /// 在打开串口时进行串口检测和更改
+        /// </summary>
+        /// <param name="sender">事件源的对象</param>
+        /// <param name="e">事件数据的对象</param>
+        private void AutoDetectionTimer_Tick(object sender, EventArgs e)
         {
-            string[] serialPortName = SerialPort.GetPortNames();
-            string[] serialPortNameDistinct = serialPortName.Distinct().ToArray();
+            string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
             if (turnOnButton.IsChecked == true)
             {
                 // 在有效串口号中遍历当前打开的串口号
-                foreach (string name in serialPortNameDistinct)
+                foreach (string name in serialPortName)
                 {
                     if (serial.PortName == name)
                         return;// 找到串口，就跳出循环
@@ -85,12 +89,12 @@ namespace WpfApp1_TestSoftware_CSMC
             else
             {
                 //检查有效串口和ComboBox中的串口号个数是否不同
-                if (portNameComboBox.Items.Count != serialPortNameDistinct.Length)
+                if (portNameComboBox.Items.Count != serialPortName.Length)
                 {
                     //串口数不同，清空ComboBox
                     portNameComboBox.Items.Clear();
                     //重新添加有效串口
-                    foreach (string name in serialPortNameDistinct)
+                    foreach (string name in serialPortName)
                     {
                         portNameComboBox.Items.Add(name);
                     }
@@ -102,7 +106,7 @@ namespace WpfApp1_TestSoftware_CSMC
         }
         #endregion
 
-        #region 串口配置面板
+        #region 串口配置面板功能
         private void SerialSettingControlState(bool state) // 使能串口配置的相关控件
         {
             portNameComboBox.IsEnabled = state;
@@ -121,8 +125,6 @@ namespace WpfApp1_TestSoftware_CSMC
                 serial.Parity = (Parity)Enum.Parse(typeof(Parity), parityComboBox.Text);
                 serial.DataBits = Convert.ToInt16(dataBitsComboBox.Text);
                 serial.StopBits = (StopBits)Enum.Parse(typeof(StopBits), stopBitsComboBox.Text);
-
-                //设置串口编码为default：获取操作系统的当前 ANSI 代码页的编码。
                 serial.Encoding = setEncoding;
 
                 //添加串口事件处理
@@ -215,7 +217,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), result);
                 }
             }));
-            
+
         }
 
         //private string StringtoHexString(byte[] buffer)
@@ -418,7 +420,7 @@ namespace WpfApp1_TestSoftware_CSMC
             if (openFile.ShowDialog() == true)
             {
                 // 将文本文档中所有文字读取到发送区
-                sendTextBox.Text = File.ReadAllText(openFile.FileName, Encoding.Default);
+                sendTextBox.Text = File.ReadAllText(openFile.FileName, setEncoding);
                 // 将文本文档的文件名读取到串口发送面板的文本框中
                 fileNameTextBox.Text = openFile.FileName;
             }
