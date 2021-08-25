@@ -58,6 +58,7 @@
     <Compile Include="SerialBase.xaml.cs">
       <DependentUpon>SerialBase.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UpdateUiBufferDelegate.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

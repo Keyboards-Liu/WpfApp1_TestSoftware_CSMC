@@ -22,7 +22,6 @@ namespace WpfApp1_TestSoftware_CSMC
         #region 定义内部变量
         private SerialPort serial = new SerialPort();
         private string receiveData;
-
         private DispatcherTimer autoSendTimer = new DispatcherTimer();
         private DispatcherTimer autoDetectionTimer = new DispatcherTimer();
 
@@ -180,45 +179,66 @@ namespace WpfApp1_TestSoftware_CSMC
             //    serial.Read(receiveBuffer, 0, serial.DataBits);
             //    receiveData = Encoding.Default.GetString(receiveBuffer);
             //}
-            string receiveData = "";
-            byte[] receiveBuffer = new byte[serial.BytesToRead];
-            serial.Read(receiveBuffer, 0, receiveBuffer.Length);
-            for (int i = 0; i < receiveBuffer.Length; i++)
+            this.Dispatcher.Invoke(new Action(delegate
             {
-                Console.WriteLine(receiveBuffer[i]);
-                receiveData += receiveBuffer[i] + " ";
-            }
-            Console.WriteLine(receiveData);
-            //receiveData = serial.ReadExisting();
-            Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+                if (hexadecimalDisplayCheckBox.IsChecked == false)
+                {
+                    receiveData = serial.ReadExisting();
+                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+                }
+                else
+                {
+                    byte[] receiveBuffer = new byte[serial.BytesToRead];
+                    serial.Read(receiveBuffer, 0, receiveBuffer.Length);
+                    for (int i = 0; i < receiveBuffer.Length; i++)
+                    {
+                        Console.Write(receiveBuffer[i] + " ");
+                    }
+                    // StringtoHexString
+                    string result = string.Empty;
+                    Console.WriteLine();
+                    for (int i = 0; i < receiveBuffer.Length; i++)
+                    {
+                        result += string.Format("{0:X2} ", receiveBuffer[i]);
+                        Console.WriteLine(result);
+                    }
+                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), result);
+                }
+            }));
+            
         }
-        private string StringtoHexString(string s)
-        {
-            //string result = string.Empty;
-            //char[] values = s.ToCharArray();
-            //foreach (char letter in values)
-            //{
-            //    // Get the integral value of the character.
-            //    int value = Convert.ToInt32(letter);
-            //    result += string.Format("{0:X2} ", value);
-            //    // Convert the integer value to a hexadecimal value in string form.
-            //    Console.WriteLine($"Hexadecimal value of {letter} is {value:X}");
-            //}
-            //return result;
 
-            string result = string.Empty;
-            byte[] recData = setEncoding.GetBytes(s);
-            foreach (byte str in recData)
-            {
-                int value = Convert.ToInt32(str);
-                result += string.Format("{0:X2} ", str);
-                Console.WriteLine($"Hexadecimal value of {str} is {value:X}");
-                Console.WriteLine(result);
-            }
-            return result;
-            //byte[] recData = Encoding.Default.GetBytes(s);
-            //return BitConverter.ToString(recData);
-        }
+        //private string StringtoHexString(byte[] buffer)
+        //{
+        //    //string result = string.Empty;
+        //    //char[] values = s.ToCharArray();
+        //    //foreach (char letter in values)
+        //    //{
+        //    //    // Get the integral value of the character.
+        //    //    int value = Convert.ToInt32(letter);
+        //    //    result += string.Format("{0:X2} ", value);
+        //    //    // Convert the integer value to a hexadecimal value in string form.
+        //    //    Console.WriteLine($"Hexadecimal value of {letter} is {value:X}");
+        //    //}
+        //    //return result;
+
+        //    //string result = string.Empty;
+        //    //byte[] recData = setEncoding.GetBytes(s);
+
+        //    byte[] buffer = reiceiveBuffer;
+        //    string result = string.Empty;
+        //    foreach (byte str in buffer)
+        //    {
+        //        int value = Convert.ToInt32(str);
+        //        result += string.Format("{0:X2} ", str);
+        //        Console.WriteLine($"Hexadecimal value of {str} is {value:X}");
+        //        Console.WriteLine(result);
+        //    }
+        //    return result;
+
+        //    //byte[] recData = Encoding.Default.GetBytes(s);
+        //    //return BitConverter.ToString(recData);
+        //}
         private void ShowData(string text)
         {
             string receiveText = text;
@@ -238,7 +258,7 @@ namespace WpfApp1_TestSoftware_CSMC
                 }
                 else // 16进制显示
                 {
-                    receiveTextBox.AppendText(StringtoHexString(receiveText));
+                    receiveTextBox.AppendText(receiveText);
                 }
                 receiveTextBox.AppendText("\r\n");
             }
