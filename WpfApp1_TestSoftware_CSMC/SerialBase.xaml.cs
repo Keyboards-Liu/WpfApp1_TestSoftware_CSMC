@@ -18,8 +18,8 @@ namespace WpfApp1_TestSoftware_CSMC
     /// </summary>
     public partial class SerialBase : UserControl
     {
-        #region 定义内部变量
-        private SerialPort serial = new SerialPort();
+        #region 内部变量定义
+        private SerialPort serialPort = new SerialPort();
         private string receiveData;
         private DispatcherTimer autoSendTimer = new DispatcherTimer();
         private DispatcherTimer autoDetectionTimer = new DispatcherTimer();
@@ -29,7 +29,7 @@ namespace WpfApp1_TestSoftware_CSMC
         public static uint sendBytesCount = 0;
         #endregion
 
-        #region 串口初始化与串口变更检测
+        #region 串口初始化/串口变更检测
         /// <summary>
         /// 串口初始化
         /// </summary>
@@ -51,8 +51,9 @@ namespace WpfApp1_TestSoftware_CSMC
         /// </summary>
         private void AddPortName()
         {
-            // 检测有效的串口
+            // 检测有效串口，去掉重复串口
             string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
+            // 在有效串口号中遍历当前打开的串口号
             foreach (string name in serialPortName)
             {
                 // 如果检测到的串口不存在于portNameComboBox中，则添加
@@ -69,36 +70,39 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e">事件数据的对象</param>
         private void AutoDetectionTimer_Tick(object sender, EventArgs e)
         {
+            // 检测有效串口，去掉重复串口
             string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
             if (turnOnButton.IsChecked == true)
             {
                 // 在有效串口号中遍历当前打开的串口号
                 foreach (string name in serialPortName)
                 {
-                    if (serial.PortName == name)
-                        return;// 找到串口，就跳出循环
+                    // 如果找到串口，说明串口仍然有效，跳出循环
+                    if (serialPort.PortName == name)
+                        return;
                 }
-                // 如果找不到, 说明串口失效了
-                // 按钮回弹，从列表中移除串口名
+                // 如果找不到, 说明串口失效了，关闭串口并移除串口名
                 turnOnButton.IsChecked = false;
-                portNameComboBox.Items.Remove(serial.PortName);
+                portNameComboBox.Items.Remove(serialPort.PortName);
                 portNameComboBox.SelectedIndex = 0;
-                // 提示信息
+                // 输出提示信息
                 statusTextBlock.Text = "串口已失效";
             }
             else
             {
-                //检查有效串口和ComboBox中的串口号个数是否不同
+                // 检查有效串口和ComboBox中的串口号个数是否不同
                 if (portNameComboBox.Items.Count != serialPortName.Length)
                 {
-                    //串口数不同，清空ComboBox
+                    // 串口数不同，清空ComboBox
                     portNameComboBox.Items.Clear();
-                    //重新添加有效串口
+                    // 重新添加有效串口
                     foreach (string name in serialPortName)
                     {
                         portNameComboBox.Items.Add(name);
                     }
-                    portNameComboBox.SelectedIndex = 0;
+                    portNameComboBox.SelectedIndex = -1;
+                    // 输出提示信息
+
                     statusTextBlock.Text = "串口列表已更新！";
                 }
             }
@@ -106,151 +110,126 @@ namespace WpfApp1_TestSoftware_CSMC
         }
         #endregion
 
-        #region 串口配置面板功能
-        private void SerialSettingControlState(bool state) // 使能串口配置的相关控件
+        #region 打开/关闭串口
+        /// <summary>
+        /// 串口配置面板
+        /// </summary>
+        /// <param name="state">使能状态</param>
+        private void SerialSettingControlState(bool state)
         {
+            // state状态为true时, ComboBox不可用, 反之可用
             portNameComboBox.IsEnabled = state;
             baudRateComboBox.IsEnabled = state;
             parityComboBox.IsEnabled = state;
             dataBitsComboBox.IsEnabled = state;
             stopBitsComboBox.IsEnabled = state;
         }
-        private void TurnOnButton_Checked(object sender, RoutedEventArgs e)// 打开串口
+        /// <summary>
+        /// 打开串口按钮
+        /// </summary>
+        /// <param name="sender">事件源的对象</param>
+        /// <param name="e">事件数据的对象</param>
+        private void TurnOnButton_Checked(object sender, RoutedEventArgs e)
         {
             try
             {
-                //配置串口
-                serial.PortName = portNameComboBox.Text;
-                serial.BaudRate = Convert.ToInt32(baudRateComboBox.Text);
-                serial.Parity = (Parity)Enum.Parse(typeof(Parity), parityComboBox.Text);
-                serial.DataBits = Convert.ToInt16(dataBitsComboBox.Text);
-                serial.StopBits = (StopBits)Enum.Parse(typeof(StopBits), stopBitsComboBox.Text);
-                serial.Encoding = setEncoding;
-
-                //添加串口事件处理
-                serial.DataReceived += new SerialDataReceivedEventHandler(ReceiveData);
-
-                //开启串口
-                serial.Open();
-
-                //关闭串口配置面板
+                // 获取面板中的配置, 并设置到串口属性中
+                serialPort.PortName = portNameComboBox.Text;
+                serialPort.BaudRate = Convert.ToInt32(baudRateComboBox.Text);
+                serialPort.Parity = (Parity)Enum.Parse(typeof(Parity), parityComboBox.Text);
+                serialPort.DataBits = Convert.ToInt16(dataBitsComboBox.Text);
+                serialPort.StopBits = (StopBits)Enum.Parse(typeof(StopBits), stopBitsComboBox.Text);
+                serialPort.Encoding = setEncoding;
+                // 添加串口事件处理, 设置委托
+                serialPort.DataReceived += new SerialDataReceivedEventHandler(ReceiveData);
+                // 关闭串口配置面板, 开启串口, 变更按钮文本, 打开绿灯, 显示提示文字
                 SerialSettingControlState(false);
-
+                serialPort.Open();
                 statusTextBlock.Text = "串口已开启";
-
-                //显示提示文字
-                turnOnButton.Content = "关闭串口";
-
                 serialPortStatusEllipse.Fill = Brushes.Green;
-
-                //使能发送面板
-                // sendControlBorder.IsEnabled = true;
-
-
+                turnOnButton.Content = "关闭串口";
             }
             catch
             {
-                statusTextBlock.Text = "配置串口出错！";
+                // 异常时显示提示文字
+                statusTextBlock.Text = "开启串口出错！";
             }
         }
+        /// <summary>
+        /// 关闭串口按钮
+        /// </summary>
+        /// <param name="sender">事件源的对象</param>
+        /// <param name="e">事件数据的对象</param>
         private void TurnOnButton_Unchecked(object sender, RoutedEventArgs e)// 关闭串口
         {
             try
             {
-                serial.Close();
-                // 关闭定时器
+                // 关闭端口, 关闭自动发送定时器, 使能串口配置面板, 变更按钮文本, 关闭绿灯, 显示提示文字 
+                serialPort.Close();
                 autoSendTimer.Stop();
-                // 使能串口配置面板
                 SerialSettingControlState(true);
-
                 statusTextBlock.Text = "串口已关闭";
-
-                // 显示提示文字
-                turnOnButton.Content = "打开串口";
-
                 serialPortStatusEllipse.Fill = Brushes.Gray;
-                // 使能发送面板
-                // sendControlBorder.IsEnabled = false;
+                turnOnButton.Content = "打开串口";
             }
             catch
             {
-
+                // 异常时显示提示文字
+                statusTextBlock.Text = "关闭串口出错！";
             }
         }
         #endregion
 
-        #region 接收显示窗口
-        private delegate void UpdateUiTextDelegate(string text);// 接收数据
+        #region 串口数据接收
+        /// <summary>
+        /// 定义全局委托, 用于接收并显示数据
+        /// </summary>
+        /// <param name="text">输入将要显示的字符串</param>
+        private delegate void UpdateUiTextDelegate(string text);
+        /// <summary>
+        /// 接收串口数据, 并按设置进行进制转换
+        /// </summary>
+        /// <param name="sender">事件源的对象</param>
+        /// <param name="e">事件数据的对象</param>
         private void ReceiveData(object sender, SerialDataReceivedEventArgs e)
         {
-            //Thread.Sleep(50);
-            //int len = serial.BytesToRead;
-            //byte[] receiveBuffer = new byte[serial.DataBits];
-            //if (len != 0)
-            //{
-            //    serial.Read(receiveBuffer, 0, serial.DataBits);
-            //    receiveData = Encoding.Default.GetString(receiveBuffer);
-            //}
-            this.Dispatcher.Invoke(new Action(delegate
+            // 多线程同步操作
+            Dispatcher.Invoke(new Action(delegate
             {
+                // 如果需要接收十进制数据, 明天从这里改起
                 if (hexadecimalDisplayCheckBox.IsChecked == false)
                 {
-                    receiveData = serial.ReadExisting();
-                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
-                }
-                else
-                {
-                    byte[] receiveBuffer = new byte[serial.BytesToRead];
-                    serial.Read(receiveBuffer, 0, receiveBuffer.Length);
+                    byte[] receiveBuffer = new byte[serialPort.BytesToRead];
+                    serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
                     for (int i = 0; i < receiveBuffer.Length; i++)
                     {
                         Console.Write(receiveBuffer[i] + " ");
                     }
-                    // StringtoHexString
-                    string result = string.Empty;
+                    receiveData = serialPort.ReadExisting();
+                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+                }
+                // 如果需要显示十六进制数据
+                else
+                {
+                    byte[] receiveBuffer = new byte[serialPort.BytesToRead];
+                    serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
+                    for (int i = 0; i < receiveBuffer.Length; i++)
+                    {
+                        Console.Write(receiveBuffer[i] + " ");
+                    }
+                    // 字符串转换为十六进制字符串
+                    string receiveData = string.Empty;
                     Console.WriteLine();
                     for (int i = 0; i < receiveBuffer.Length; i++)
                     {
-                        result += string.Format("{0:X2} ", receiveBuffer[i]);
-                        Console.WriteLine(result);
+                        receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
+                        Console.WriteLine(receiveData);
                     }
-                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), result);
+                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
                 }
             }));
-
         }
 
-        //private string StringtoHexString(byte[] buffer)
-        //{
-        //    //string result = string.Empty;
-        //    //char[] values = s.ToCharArray();
-        //    //foreach (char letter in values)
-        //    //{
-        //    //    // Get the integral value of the character.
-        //    //    int value = Convert.ToInt32(letter);
-        //    //    result += string.Format("{0:X2} ", value);
-        //    //    // Convert the integer value to a hexadecimal value in string form.
-        //    //    Console.WriteLine($"Hexadecimal value of {letter} is {value:X}");
-        //    //}
-        //    //return result;
-
-        //    //string result = string.Empty;
-        //    //byte[] recData = setEncoding.GetBytes(s);
-
-        //    byte[] buffer = reiceiveBuffer;
-        //    string result = string.Empty;
-        //    foreach (byte str in buffer)
-        //    {
-        //        int value = Convert.ToInt32(str);
-        //        result += string.Format("{0:X2} ", str);
-        //        Console.WriteLine($"Hexadecimal value of {str} is {value:X}");
-        //        Console.WriteLine(result);
-        //    }
-        //    return result;
-
-        //    //byte[] recData = Encoding.Default.GetBytes(s);
-        //    //return BitConverter.ToString(recData);
-        //}
         private void ShowData(string text)
         {
             string receiveText = text;
@@ -306,7 +285,7 @@ namespace WpfApp1_TestSoftware_CSMC
         #region 发送控制面板
         private void SerialPortSend()// 发送数据
         {
-            if (!serial.IsOpen)
+            if (!serialPort.IsOpen)
             {
                 statusTextBlock.Text = "请先打开串口！";
                 return;
@@ -319,7 +298,7 @@ namespace WpfApp1_TestSoftware_CSMC
                 // 字符串发送
                 if (hexadecimalSendCheckBox.IsChecked == false)
                 {
-                    serial.Write(sendData);
+                    serialPort.Write(sendData);
 
                     // 更新发送数据计数
                     sendBytesCount += (uint)sendData.Length;
@@ -352,7 +331,7 @@ namespace WpfApp1_TestSoftware_CSMC
                             }
                         }
 
-                        serial.Write(sendBuffer, 0, sendBuffer.Length);
+                        serialPort.Write(sendBuffer, 0, sendBuffer.Length);
 
                         // 更新发送数据计数
                         sendBytesCount += (uint)sendBuffer.Length;
