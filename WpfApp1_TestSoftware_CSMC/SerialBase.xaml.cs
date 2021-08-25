@@ -2,9 +2,9 @@
 using System;
 using System.IO;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,8 +16,7 @@ namespace WpfApp1_TestSoftware_CSMC
     /// <summary>
     /// SerialBaseUserControl.xaml 的交互逻辑
     /// </summary>
-
-    public partial class SerialBase : UserControl
+        public partial class SerialBase : UserControl
     {
         #region 定义内部变量
         private SerialPort serial = new SerialPort();
@@ -32,10 +31,13 @@ namespace WpfApp1_TestSoftware_CSMC
         #endregion
 
         #region 初始化/串口检测
-        public SerialBase()// 串口初始化
+        /// <summary>
+        /// 串口初始化
+        /// </summary>
+        public SerialBase()
         {
             InitializeComponent();// 初始化组件
-            GetValuablePortName();// 串口检测
+            AddPortName();// 检测和添加串口
             // 设置自动检测50毫秒1次
             autoDetectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             autoDetectionTimer.Tick += new EventHandler(AutoDetectionTimer_Tick);
@@ -44,22 +46,30 @@ namespace WpfApp1_TestSoftware_CSMC
             // 设置状态栏提示
             statusTextBlock.Text = "准备就绪";
         }
-        private void GetValuablePortName()// 自动检测串口名
+        /// <summary>
+        /// 检测和添加串口
+        /// </summary>
+        private void AddPortName()
         {
-            // 检测有效的串口并添加到ComboBox
+            // 检测有效的串口
             string[] serialPortName = SerialPort.GetPortNames();
-            foreach (string name in serialPortName)
+            string[] serialPortNameDistinct = serialPortName.Distinct().ToArray();
+            foreach (string name in serialPortNameDistinct)
             {
-                portNameComboBox.Items.Add(name);
-            }
+                // 如果检测到的串口不存在于portNameComboBox中，则添加
+                if (portNameComboBox.Items.Contains(name) == false){
+                    portNameComboBox.Items.Add(name);
+                }
+            }            
         }
         private void AutoDetectionTimer_Tick(object sender, EventArgs e)// 自动检测串口时间
         {
             string[] serialPortName = SerialPort.GetPortNames();
+            string[] serialPortNameDistinct = serialPortName.Distinct().ToArray();
             if (turnOnButton.IsChecked == true)
             {
                 // 在有效串口号中遍历当前打开的串口号
-                foreach (string name in serialPortName)
+                foreach (string name in serialPortNameDistinct)
                 {
                     if (serial.PortName == name)
                         return;// 找到串口，就跳出循环
@@ -75,12 +85,12 @@ namespace WpfApp1_TestSoftware_CSMC
             else
             {
                 //检查有效串口和ComboBox中的串口号个数是否不同
-                if (portNameComboBox.Items.Count != serialPortName.Length)
+                if (portNameComboBox.Items.Count != serialPortNameDistinct.Length)
                 {
                     //串口数不同，清空ComboBox
                     portNameComboBox.Items.Clear();
                     //重新添加有效串口
-                    foreach (string name in serialPortName)
+                    foreach (string name in serialPortNameDistinct)
                     {
                         portNameComboBox.Items.Add(name);
                     }
