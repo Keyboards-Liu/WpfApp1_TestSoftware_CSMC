@@ -249,78 +249,55 @@ namespace WpfApp1_TestSoftware_CSMC
 
         #endregion
 
-        #region 发送控制面板
-        private void SerialPortSend()// 发送数据
+        #region 串口数据发送
+        /// <summary>
+        /// 串口数据发送
+        /// </summary>
+        private void SerialPortSend()
         {
             if (!serialPort.IsOpen)
             {
                 statusTextBlock.Text = "请先打开串口！";
                 return;
             }
+            string sendData = sendTextBox.Text;
+            // 十六进制数据发送
             try
             {
-                // 复制发送数据
-                string sendData = sendTextBox.Text;
-
-                // 字符串发送
-                if (hexadecimalSendCheckBox.IsChecked == false)
-                {
-                    serialPort.Write(sendData);
-
-                    // 更新发送数据计数
-                    sendBytesCount += (uint)sendData.Length;
-                    statusSendByteTextBlock.Text = sendBytesCount.ToString();
-
-                }
-                else // 十六进制发送
+                // 去掉十六进制前缀
+                sendData.Replace("0x", ""); 
+                sendData.Replace("0X", "");
+                // 分割字符串
+                string[] strArray = sendData.Split(new char[] { ',', '，', '\r', '\n', ' ', '\t' }); 
+                // 写入数据缓冲区
+                byte[] sendBuffer = new byte[strArray.Length];
+                int i = 0;
+                foreach (string str in strArray)
                 {
                     try
                     {
-                        sendData.Replace("0x", "");   // 去掉0x
-                        sendData.Replace("0X", "");   // 去掉0X
-                        //  发送数据
-                        string[] strArray = sendData.Split(new char[] { ',', '，', '\r', '\n', ' ', '\t' });
-                        int decNum = 0;
-                        int i = 0;
-                        byte[] sendBuffer = new byte[strArray.Length];  // 发送数据缓冲区
-
-                        foreach (string str in strArray)
-                        {
-                            try
-                            {
-                                decNum = Convert.ToInt16(str, 16);
-                                sendBuffer[i] = Convert.ToByte(decNum);
-                                i++;
-                            }
-                            catch
-                            {
-                                MessageBox.Show("字节越界，请逐个字节输入！", "Error");
-                            }
-                        }
-
-                        serialPort.Write(sendBuffer, 0, sendBuffer.Length);
-
-                        // 更新发送数据计数
-                        sendBytesCount += (uint)sendBuffer.Length;
-                        statusSendByteTextBlock.Text = sendBytesCount.ToString();
-
+                        int j = Convert.ToInt16(str, 16);
+                        sendBuffer[i] = Convert.ToByte(j);
+                        i++;
                     }
-                    catch // 无法转为16进制时
+                    catch
                     {
-                        autoSendCheckBox.IsChecked = false;// 关闭自动发送
-                        statusTextBlock.Text = "当前为16进制发送模式，请输入16进制数据";
-                        return;
+                        MessageBox.Show("字节越界，请逐个字节输入！", "Error");
                     }
-
                 }
-
+                serialPort.Write(sendBuffer, 0, sendBuffer.Length);
+                // 更新发送数据计数
+                sendBytesCount += (uint)sendBuffer.Length;
+                statusSendByteTextBlock.Text = sendBytesCount.ToString();
             }
             catch
             {
-
+                autoSendCheckBox.IsChecked = false;// 关闭自动发送
+                statusTextBlock.Text = "当前为16进制发送模式，请输入16进制数据";
+                return;
             }
-
         }
+
         private void SendButton_Click(object sender, RoutedEventArgs e)// 手动发送数据
         {
             SerialPortSend();
