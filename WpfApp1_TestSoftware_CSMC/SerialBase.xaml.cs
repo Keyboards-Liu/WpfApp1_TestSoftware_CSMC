@@ -187,46 +187,32 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="text">输入将要显示的字符串</param>
         private delegate void UpdateUiTextDelegate(string text);
         /// <summary>
-        /// 接收串口数据, 并按设置进行进制转换
+        /// 接收串口数据, 并转换为16进制字符串
         /// </summary>
         /// <param name="sender">事件源的对象</param>
         /// <param name="e">事件数据的对象</param>
         private void ReceiveData(object sender, SerialDataReceivedEventArgs e)
         {
-            // 多线程同步操作
+            // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
             Dispatcher.Invoke(new Action(delegate
             {
-                // 如果需要接收十进制数据, 明天从这里改起
-                if (hexadecimalDisplayCheckBox.IsChecked == false)
+                // 读取缓冲区内所有字节
+                byte[] receiveBuffer = new byte[serialPort.BytesToRead];
+                serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
+                //for (int i = 0; i < receiveBuffer.Length; i++)
+                //{
+                //    Console.Write(receiveBuffer[i] + " ");
+                //}
+                // 字符串转换为十六进制字符串
+                receiveData = string.Empty;
+                Console.WriteLine();
+                for (int i = 0; i < receiveBuffer.Length; i++)
                 {
-                    byte[] receiveBuffer = new byte[serialPort.BytesToRead];
-                    serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
-                    for (int i = 0; i < receiveBuffer.Length; i++)
-                    {
-                        Console.Write(receiveBuffer[i] + " ");
-                    }
-                    receiveData = serialPort.ReadExisting();
-                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+                    receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
+                    //Console.WriteLine(receiveData);
                 }
-                // 如果需要显示十六进制数据
-                else
-                {
-                    byte[] receiveBuffer = new byte[serialPort.BytesToRead];
-                    serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
-                    for (int i = 0; i < receiveBuffer.Length; i++)
-                    {
-                        Console.Write(receiveBuffer[i] + " ");
-                    }
-                    // 字符串转换为十六进制字符串
-                    string receiveData = string.Empty;
-                    Console.WriteLine();
-                    for (int i = 0; i < receiveBuffer.Length; i++)
-                    {
-                        receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
-                        Console.WriteLine(receiveData);
-                    }
-                    Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
-                }
+                Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+
             }));
         }
 
