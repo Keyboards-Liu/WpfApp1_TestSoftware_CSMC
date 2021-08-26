@@ -180,7 +180,7 @@ namespace WpfApp1_TestSoftware_CSMC
         }
         #endregion
 
-        #region 串口数据接收
+        #region 串口数据接收处理/窗口显示清空功能
         /// <summary>
         /// 定义全局委托, 用于接收并显示数据
         /// </summary>
@@ -193,54 +193,48 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e">事件数据的对象</param>
         private void ReceiveData(object sender, SerialDataReceivedEventArgs e)
         {
+            // 读取缓冲区内所有字节
+            byte[] receiveBuffer = new byte[serialPort.BytesToRead];
+            serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
+            // 字符串转换为十六进制字符串
+            receiveData = string.Empty;
+            Console.WriteLine();
+            for (int i = 0; i < receiveBuffer.Length; i++)
+            {
+                receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
+            }
             // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
-            Dispatcher.Invoke(new Action(delegate
-            {
-                // 读取缓冲区内所有字节
-                byte[] receiveBuffer = new byte[serialPort.BytesToRead];
-                serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
-                //for (int i = 0; i < receiveBuffer.Length; i++)
-                //{
-                //    Console.Write(receiveBuffer[i] + " ");
-                //}
-                // 字符串转换为十六进制字符串
-                receiveData = string.Empty;
-                Console.WriteLine();
-                for (int i = 0; i < receiveBuffer.Length; i++)
-                {
-                    receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
-                    //Console.WriteLine(receiveData);
-                }
-                Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
-
-            }));
+            Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
         }
-
-        private void ShowData(string text)
+        /// <summary>
+        /// 接收窗口显示功能
+        /// </summary>
+        /// <param name="receiveText">需要窗口显示的字符串</param>
+        private void ShowData(string receiveText)
         {
-            string receiveText = text;
-
             // 更新接收字节数
-            receiveBytesCount += (uint)receiveText.Length;
+            receiveBytesCount += (uint)receiveText.Length / 3;
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
-
-            // 没有关闭数据显示
-            if (stopShowingButton.IsChecked == false && receiveText.Length >= 0)
+            // 在接收窗口中显示字符串
+            if (receiveText.Length >= 0)
             {
-                // 字符串显示
-                receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- ");
-                if (hexadecimalDisplayCheckBox.IsChecked == false) // 直接显示
-                {
-                    receiveTextBox.AppendText(receiveText + " ");
-                }
-                else // 16进制显示
-                {
-                    receiveTextBox.AppendText(receiveText);
-                }
-                receiveTextBox.AppendText("\r\n");
+                receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- " + receiveText + "\r\n");
             }
         }
-
+        /// <summary>
+        /// 接收窗口清空按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ClearReceiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            receiveTextBox.Clear();
+        }
+        /// <summary>
+        /// 接收窗口自动清空功能
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ReceiveTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (receiveTextBox.LineCount >= 50 && autoClearCheckBox.IsChecked == true)
@@ -249,23 +243,10 @@ namespace WpfApp1_TestSoftware_CSMC
             }
             else
             {
-                try
-                {
-                    receiveScrollViewer.ScrollToEnd();
-                }
-                catch
-                {
-
-                }
+                receiveScrollViewer.ScrollToEnd();
             }
         }
-        #endregion
 
-        #region 接收设置面板
-        private void ClearReceiveButton_Click(object sender, RoutedEventArgs e)// 清空接收数据
-        {
-            receiveTextBox.Clear();
-        }
         #endregion
 
         #region 发送控制面板
