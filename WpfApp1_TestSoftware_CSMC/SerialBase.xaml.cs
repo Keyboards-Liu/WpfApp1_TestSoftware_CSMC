@@ -148,6 +148,9 @@ namespace WpfApp1_TestSoftware_CSMC
                 statusTextBlock.Text = "串口已开启";
                 serialPortStatusEllipse.Fill = Brushes.Green;
                 turnOnButton.Content = "关闭串口";
+                // 清空缓冲区
+                serialPort.DiscardInBuffer();
+                serialPort.DiscardOutBuffer();
             }
             catch
             {
@@ -203,6 +206,7 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
             }
+            receiveData = receiveData.Trim();
             // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
             Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
         }
@@ -213,12 +217,22 @@ namespace WpfApp1_TestSoftware_CSMC
         private void ShowData(string receiveText)
         {
             // 更新接收字节数
-            receiveBytesCount += (uint)receiveText.Length / 3;
+            receiveBytesCount += (uint)((receiveText.Length + 1) / 3);
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
             // 在接收窗口中显示字符串
             if (receiveText.Length >= 0)
             {
                 receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- " + receiveText + "\r\n");
+                try
+                {
+                frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
+                frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
+                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
+                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
+                frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, (Convert.ToInt32(frameLength.Text, 16) - 2) * 3 - 1);
+                frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
+                }
+                catch { }
             }
         }
         /// <summary>
@@ -447,6 +461,7 @@ namespace WpfApp1_TestSoftware_CSMC
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
             statusSendByteTextBlock.Text = sendBytesCount.ToString();
         }
+
 
 
         //private void StopShowingButton_Checked(object sender, RoutedEventArgs e)

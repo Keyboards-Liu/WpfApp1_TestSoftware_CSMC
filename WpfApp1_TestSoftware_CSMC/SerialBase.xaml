@@ -38,9 +38,10 @@
     <!--定义窗格网络-->
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="217"/>
-            <RowDefinition Height="87"/>
-            <RowDefinition Height="196"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="120"/>
+            <RowDefinition Height="180"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -48,8 +49,8 @@
             <ColumnDefinition Width="540"/>
         </Grid.ColumnDefinitions>
         <!--串口配置面板-->
-        <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="配置面板" >
-            <Grid>
+        <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="配置面板" Grid.RowSpan="2" >
+            <Grid >
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -118,8 +119,8 @@
             </Grid>
         </GroupBox>
         <!--串口接收面板-->
-        <GroupBox Header="接收面板" Grid.Row="1" Grid.Column="0" Margin="5" BorderBrush="Gray" BorderThickness="1">
-            <Grid VerticalAlignment="Stretch">
+        <GroupBox Header="接收面板" Grid.Row="2" Grid.Column="0" Margin="5" BorderBrush="Gray" BorderThickness="1">
+            <Grid VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
@@ -129,7 +130,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button x:Name="clearReceiveButton" Grid.RowSpan="2" Grid.Column="1" Margin="5" Content="清空接收区" Click="ClearReceiveButton_Click"/>
-                <Button Grid.Column="0" Command="Save" Content="保存文件" Margin="10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <Button Grid.Column="0" Command="Save" Content="保存文件" Margin="10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 <CheckBox x:Name="autoClearCheckBox" Margin="10,5" Content="自动清空" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
 
                 <!--<CheckBox x:Name="hexadecimalDisplayCheckBox" Unchecked="HexadecimalDisplayCheckBox_Unchecked" Checked="HexadecimalDisplayCheckBox_Checked" Grid.Row="2" Grid.Column="0" Margin="5" Content="十六进制显示" VerticalContentAlignment="Center"/>-->
@@ -137,8 +138,8 @@
             </Grid>
         </GroupBox>
         <!--串口发送面板-->
-        <GroupBox Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="发送面板">
-            <Grid>
+        <GroupBox Grid.Row="3" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="发送面板">
+            <Grid  VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
@@ -177,8 +178,8 @@
                 </StackPanel>
             </Grid>
         </GroupBox>
-        <!--接收文本窗口-->
-        <GroupBox Header="接收文本窗口" Grid.Column="1" Grid.RowSpan="2" Margin="5" BorderBrush="Gray">
+        <!--接收文本面板-->
+        <GroupBox Header="接收文本面板" Grid.Column="1" Grid.Row="0" Margin="5" BorderBrush="Gray">
             <ScrollViewer x:Name="receiveScrollViewer" Margin="5">
                 <TextBox x:Name="receiveTextBox" IsReadOnly="True" TextChanged="ReceiveTextBox_TextChanged" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" BorderBrush="{x:Null}" BorderThickness="0"/>
                 <ScrollViewer.ToolTip>
@@ -186,9 +187,111 @@
                 </ScrollViewer.ToolTip>
             </ScrollViewer>
         </GroupBox>
+        <!--接收文本解析面板-->
+        <GroupBox Header="接收文本解析面板" Grid.Column="1" Grid.Row="1" Margin="5" BorderBrush="Gray">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="帧头" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="frameHeader" IsReadOnly="True" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="长度域" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="frameLength" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="命令域" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="frameCommand" IsReadOnly="True" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="数据地址域" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="frameAddress" IsReadOnly="True" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="数据内容域" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name ="frameContent"  IsReadOnly="True" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="校验码" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="frameCRC" IsReadOnly="True" Width="50" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </GroupBox>
 
-        <!--发送文本窗口-->
-        <GroupBox Header="发送文本窗口" Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
+        <!--仪表参数解析面板-->
+        <GroupBox Header="仪表参数解析面板" Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0"  Orientation="Horizontal">
+                    <Label Content="通信协议" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="网络地址" VerticalAlignment="Center" Width="80"/>
+                    <TextBox Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="固定厂商号" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="仪表类型" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="仪表组号" VerticalAlignment="Center" Width="80"/>
+                    <TextBox  IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="数据类型" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="通信成功率" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="电池电压" VerticalAlignment="Center" Width="80"/>
+                    <TextBox  IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="0" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="休眠时间" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="仪表状态" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="实时数据" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <Label Content="CRC校验" VerticalAlignment="Center" Width="80"/>
+                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <!--发送文本面板-->
+        <GroupBox Header="发送文本面板" Grid.Column="1" Grid.Row="3" Margin="5" BorderBrush="Gray">
             <ScrollViewer Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
                 <TextBox x:Name="sendTextBox" AcceptsReturn="True" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" PreviewTextInput="SendTextBox_PreviewTextInput" BorderBrush="{x:Null}" BorderThickness="0"/>
                 <ScrollViewer.ToolTip>
@@ -196,9 +299,9 @@
                 </ScrollViewer.ToolTip>
             </ScrollViewer>
         </GroupBox>
-        
 
-        <StatusBar Grid.Row="3" Grid.ColumnSpan="2">
+        <!--状态栏-->
+        <StatusBar Grid.Row="4" Grid.ColumnSpan="2">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid VerticalAlignment="Top">
@@ -233,7 +336,7 @@
             </StatusBarItem>
             <StatusBarItem Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,0">
                 <!--计数清零-->
-                <Button Name="countClearButton" Click="CountClearButton_Click" Content="计数清零"/>
+                <Button Width="110" Name="countClearButton" Click="CountClearButton_Click" Content="计数清零"/>
             </StatusBarItem>
         </StatusBar>
 
