@@ -13,7 +13,9 @@
              xmlns:local="clr-namespace:WpfApp1_TestSoftware_CSMC"
              mc:Ignorable="d" 
              
-             MaxHeight="580" MaxWidth="780" Background="White">
+             MinHeight="540" MinWidth="780" 
+             MaxHeight="540" MaxWidth="780" 
+             Background="White">
 
     <!--自定义命令-->
     <UserControl.Resources>
@@ -36,17 +38,17 @@
     <!--定义窗格网络-->
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="198"/>
-            <RowDefinition Height="101"/>
-            <RowDefinition Height="200"/>
-            <RowDefinition Height="35"/>
+            <RowDefinition Height="217"/>
+            <RowDefinition Height="87"/>
+            <RowDefinition Height="196"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="540"/>
         </Grid.ColumnDefinitions>
         <!--串口配置面板-->
-        <Border Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5" >
+        <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="配置面板" >
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -114,10 +116,10 @@
 
 
             </Grid>
-        </Border>
+        </GroupBox>
         <!--串口接收面板-->
-        <Border Grid.Row="1" Grid.Column="0" Margin="5" BorderBrush="Gray" BorderThickness="1">
-            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <GroupBox Header="接收面板" Grid.Row="1" Grid.Column="0" Margin="5" BorderBrush="Gray" BorderThickness="1">
+            <Grid VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
@@ -126,18 +128,16 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="clearReceiveButton" Grid.Row="0" Grid.Column="0" Margin="5" Content="清空接收区" Click="ClearReceiveButton_Click"/>
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5" VerticalAlignment="Center">
-                    <CheckBox x:Name="autoClearCheckBox" Grid.Row="1" Grid.Column="0" Margin="5" Content="自动清空" VerticalContentAlignment="Center"/>
-                    <CheckBox x:Name="hexadecimalDisplayCheckBox" Unchecked="HexadecimalDisplayCheckBox_Unchecked" Checked="HexadecimalDisplayCheckBox_Checked" Grid.Row="2" Grid.Column="0" Margin="5" Content="十六进制显示" VerticalContentAlignment="Center"/>
-                </StackPanel>
+                <Button x:Name="clearReceiveButton" Grid.RowSpan="2" Grid.Column="1" Margin="5" Content="清空接收区" Click="ClearReceiveButton_Click"/>
+                <Button Grid.Column="0" Command="Save" Content="保存文件" Margin="10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <CheckBox x:Name="autoClearCheckBox" Margin="10,5" Content="自动清空" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
 
-                <ToggleButton x:Name="stopShowingButton" Grid.Row="0" Grid.Column="1" Margin="5" Content="停止显示" Checked="StopShowingButton_Checked" Unchecked="StopShowingButton_Unchecked"/>
-                <Button Command="Save" Content="接收文件" Grid.Column="1" Margin="5" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <!--<CheckBox x:Name="hexadecimalDisplayCheckBox" Unchecked="HexadecimalDisplayCheckBox_Unchecked" Checked="HexadecimalDisplayCheckBox_Checked" Grid.Row="2" Grid.Column="0" Margin="5" Content="十六进制显示" VerticalContentAlignment="Center"/>-->
+                <!--<ToggleButton x:Name="stopShowingButton" Grid.Row="0" Grid.Column="1" Margin="5" Content="停止显示" Checked="StopShowingButton_Checked" Unchecked="StopShowingButton_Unchecked"/>-->
             </Grid>
-        </Border>
+        </GroupBox>
         <!--串口发送面板-->
-        <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="5">
+        <GroupBox Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="发送面板">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -149,7 +149,6 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Border></Border>
                 <StackPanel Grid.Column="0" Grid.Row="0" Margin="5" VerticalAlignment="Center" Grid.ColumnSpan="2" Orientation="Horizontal" >
                     <Label VerticalAlignment="Center" Content="自动发送周期"/>
                     <TextBox x:Name="autoSendCycleTextBox" IsReadOnly="True" Margin="0" Text="1000" MinWidth="66" VerticalAlignment="Center"/>
@@ -158,8 +157,8 @@
 
                 <Border  Grid.Column="0" Grid.Row="1" Margin="5" VerticalAlignment="Center">
                     <StackPanel  Orientation="Vertical">
-                        <CheckBox x:Name="autoSendCheckBox" Margin="5" VerticalAlignment="Center" Content="自动发送" Checked="AutoSendCheckBox_Checked"/>
-                        <CheckBox x:Name="hexadecimalSendCheckBox" Checked="HexadecimalSendCheckBox_Checked" Unchecked="HexadecimalSendCheckBox_Unchecked" Margin="5" VerticalAlignment="Center" Content="十六进制发送" IsChecked="True"/>
+                        <CheckBox x:Name="autoSendCheckBox" Margin="5" VerticalAlignment="Center" Content="自动发送" Checked="AutoSendCheckBox_Checked" Unchecked="AutoSendCheckBox_Unchecked"/>
+                        <!--<CheckBox x:Name="hexadecimalSendCheckBox" Checked="HexadecimalSendCheckBox_Checked" Unchecked="HexadecimalSendCheckBox_Unchecked" Margin="5" VerticalAlignment="Center" Content="十六进制发送" IsChecked="True"/>-->
                         <Button x:Name="clearSendButton" Margin="5" Content="清空重填" Click="ClearSendButton_Click"/>
                         <Button Command="Open" Margin="5" Content="加载文件" Click="ClearReceiveButton_Click"/>
                     </StackPanel>
@@ -177,41 +176,66 @@
                     <TextBox x:Name="fileNameTextBox" IsReadOnly="True" Margin="0" Text="选择文件" HorizontalContentAlignment="Center" Width="150" VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
-        </Border>
+        </GroupBox>
         <!--接收文本窗口-->
-        <ScrollViewer x:Name="receiveScrollViewer" Grid.Column="1" Grid.RowSpan="2" Margin="5" BorderBrush="Gray">
-            <TextBox x:Name="receiveTextBox" IsReadOnly="True" TextChanged="ReceiveTextBox_TextChanged" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15"/>
-            <ScrollViewer.ToolTip>
-                <ToolTip Placement="Top" Content="显示串口接收到的数据"/>
-            </ScrollViewer.ToolTip>
-        </ScrollViewer>
-        <!--发送文本窗口-->
-        <ScrollViewer x:Name="sendScrollViewer" Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
-            <TextBox x:Name="sendTextBox" AcceptsReturn="True" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" PreviewTextInput="SendTextBox_PreviewTextInput"/>
-            <ScrollViewer.ToolTip>
-                <ToolTip Placement="Top" Content="将要发送的数据，Ctrl+Enter发送"/>
-            </ScrollViewer.ToolTip>
-        </ScrollViewer>
-        <Grid Grid.Row="4" Grid.ColumnSpan="2" Margin="5,0" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+        <GroupBox Header="接收文本窗口" Grid.Column="1" Grid.RowSpan="2" Margin="5" BorderBrush="Gray">
+            <ScrollViewer x:Name="receiveScrollViewer" Margin="5">
+                <TextBox x:Name="receiveTextBox" IsReadOnly="True" TextChanged="ReceiveTextBox_TextChanged" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" BorderBrush="{x:Null}" BorderThickness="0"/>
+                <ScrollViewer.ToolTip>
+                    <ToolTip Placement="Top" Content="显示串口接收到的数据"/>
+                </ScrollViewer.ToolTip>
+            </ScrollViewer>
+        </GroupBox>
 
-            <!--提示栏-->
-            <TextBlock x:Name="statusTextBlock" Foreground="Red" Margin="5" Grid.Column="0" VerticalAlignment="Center"/>
-            <!--接收字节数-->
-            <Label HorizontalAlignment="Right" Grid.Column="1" Margin="5" Content="接收字节数"/>
-            <TextBlock Name="statusReceiveByteTextBlock" Foreground="Blue" Grid.Column="2" VerticalAlignment="Center" Margin="5" Text="0"/>
-            <!--发送字节数-->
-            <Label HorizontalAlignment="Right" Grid.Column="3" Margin="5" Content="发送字节数"/>
-            <TextBlock Name="statusSendByteTextBlock" Foreground="Blue" Grid.Column="4" VerticalAlignment="Center" Margin="5" Text="0"/>
-            <!--计数清零-->
-            <Button Name="countClearButton" Click="CountClearButton_Click" VerticalAlignment="Center" Content="计数清零" Grid.Column="5" Margin="5"/>
-        </Grid>
+        <!--发送文本窗口-->
+        <GroupBox Header="发送文本窗口" Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
+            <ScrollViewer Grid.Column="1" Grid.Row="2" Margin="5" BorderBrush="Gray">
+                <TextBox x:Name="sendTextBox" AcceptsReturn="True" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" PreviewTextInput="SendTextBox_PreviewTextInput" BorderBrush="{x:Null}" BorderThickness="0"/>
+                <ScrollViewer.ToolTip>
+                    <ToolTip Placement="Top" Content="将要发送的数据，Ctrl+Enter发送"/>
+                </ScrollViewer.ToolTip>
+            </ScrollViewer>
+        </GroupBox>
+        
+
+        <StatusBar Grid.Row="3" Grid.ColumnSpan="2">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0" VerticalAlignment="Stretch" Margin="5,0">
+                <!--提示栏-->
+                <TextBlock x:Name="statusTextBlock" Foreground="Red"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" Grid.Column="1" >
+                <!--接收字节数-->
+                <Label Content="接收字节数"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="2" VerticalAlignment="Center" >
+                <TextBlock Name="statusReceiveByteTextBlock" Foreground="Blue" Text="0"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="3" HorizontalAlignment="Right">
+                <!--发送字节数-->
+                <Label Content="发送字节数"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="4" VerticalAlignment="Center" >
+                <TextBlock Name="statusSendByteTextBlock" Foreground="Blue" Text="0"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,0">
+                <!--计数清零-->
+                <Button Name="countClearButton" Click="CountClearButton_Click" Content="计数清零"/>
+            </StatusBarItem>
+        </StatusBar>
+
     </Grid >
 </UserControl>
