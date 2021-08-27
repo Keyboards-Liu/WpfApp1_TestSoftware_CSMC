@@ -249,32 +249,9 @@ namespace WpfApp1_TestSoftware_CSMC
 
         #endregion
 
-        #region 串口数据发送/定时发送/窗口清空功能
+        #region 串口数据发送
         /// <summary>
-        /// 在发送窗口中写入数据
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SendTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            // 将光标移至文字末尾
-            sendTextBox.SelectionStart = sendTextBox.Text.Length;
-            //MatchCollection hexadecimalCollection = Regex.Matches(e.Text, @"[(0(X|x))?\da-fA-F]");
-            MatchCollection hexadecimalCollection = Regex.Matches(e.Text, @"[\da-fA-F]");
-            foreach (Match mat in hexadecimalCollection)
-            {
-                sendTextBox.AppendText(mat.Value);
-            }
-            // 每输入两个字符自动添加空格
-            if (sendTextBox.Text.Length % 3 == 2)
-            {
-                sendTextBox.Text += " ";
-                sendTextBox.SelectionStart = sendTextBox.Text.Length;
-            }
-            e.Handled = true;
-        }
-        /// <summary>
-        /// 串口数据发送逻辑
+        /// 串口数据发送
         /// </summary>
         private void SerialPortSend()
         {
@@ -288,10 +265,10 @@ namespace WpfApp1_TestSoftware_CSMC
             try
             {
                 // 去掉十六进制前缀
-                sendData.Replace("0x", "");
+                sendData.Replace("0x", ""); 
                 sendData.Replace("0X", "");
                 // 分割字符串
-                string[] strArray = sendData.Split(new char[] { ',', '，', '\r', '\n', ' ', '\t' });
+                string[] strArray = sendData.Split(new char[] { ',', '，', '\r', '\n', ' ', '\t' }); 
                 // 写入数据缓冲区
                 byte[] sendBuffer = new byte[strArray.Length];
                 int i = 0;
@@ -320,66 +297,39 @@ namespace WpfApp1_TestSoftware_CSMC
                 return;
             }
         }
-        /// <summary>
-        /// 手动单击按钮发送
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SendButton_Click(object sender, RoutedEventArgs e)
+
+        private void SendButton_Click(object sender, RoutedEventArgs e)// 手动发送数据
         {
             SerialPortSend();
         }
-        /// <summary>
-        /// 自动发送开启
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AutoSendCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void AutoSendCheckBox_Checked(object sender, RoutedEventArgs e)// 设置自动发送定时器
         {
             // 创建定时器
             autoSendTimer.Tick += new EventHandler(AutoSendTimer_Tick);
+
             // 设置定时时间，开启定时器
             autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
             autoSendTimer.Start();
         }
-        /// <summary>
-        /// 在每个自动发送周期执行
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AutoSendTimer_Tick(object sender, EventArgs e)
-        {
-            // 发送数据
-            SerialPortSend();
-            // 设置新的定时时间           
-            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
-        }
-        /// <summary>
-        /// 自动发送关闭
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AutoSendCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void AutoSendCheckBox_Unchecked(object sender, RoutedEventArgs e)// 关闭自动发送定时器
         {
             autoSendTimer.Stop();
         }
-        /// <summary>
-        /// 清空发送区
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClearSendButton_Click(object sender, RoutedEventArgs e)
+        private void AutoSendTimer_Tick(object sender, EventArgs e)// 自动发送时间到期
+        {
+            //发送数据
+            SerialPortSend();
+
+            //设置新的定时时间           
+            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
+        }
+        private void ClearSendButton_Click(object sender, RoutedEventArgs e)// 清空发送按钮
         {
             sendTextBox.Clear();
         }
         #endregion
 
         #region 文件读取与保存 (文件I/O)
-        /// <summary>
-        /// 读取文件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void FileOpen(object sender, ExecutedRoutedEventArgs e)
         {
             // 打开文件对话框 (默认选择serialCom.txt, 默认格式为文本文档)
@@ -398,11 +348,7 @@ namespace WpfApp1_TestSoftware_CSMC
                 fileNameTextBox.Text = openFile.FileName;
             }
         }
-        /// <summary>
-        /// 读取接收区并保存文件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void FileSave(object sender, ExecutedRoutedEventArgs e)
         {
             // 判断接收区是否有字段
@@ -430,13 +376,32 @@ namespace WpfApp1_TestSoftware_CSMC
                 }
             }
         }
+
         #endregion
 
         private void WindowClosed(object sender, ExecutedRoutedEventArgs e)
         {
         }
+        private void SendTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // 将光标移至文字末尾
+            sendTextBox.SelectionStart = sendTextBox.Text.Length;
+            if (hexadecimalSendCheckBox.IsChecked == true)
+            {
+                MatchCollection hexadecimalCollection = Regex.Matches(e.Text, @"[\da-fA-F]");
 
+                foreach (Match mat in hexadecimalCollection)
+                {
+                    sendTextBox.AppendText(mat.Value);
+                }
 
+                e.Handled = true;
+            }
+            else
+            {
+                e.Handled = false;
+            }
+        }
         private void CountClearButton_Click(object sender, RoutedEventArgs e)
         {
             //接收、发送计数清零
@@ -448,38 +413,39 @@ namespace WpfApp1_TestSoftware_CSMC
             statusSendByteTextBlock.Text = sendBytesCount.ToString();
         }
 
+        private void StopShowingButton_Checked(object sender, RoutedEventArgs e)
+        {
+            stopShowingButton.Content = "恢复显示";
 
-        //private void StopShowingButton_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    stopShowingButton.Content = "恢复显示";
-        //}
+        }
 
-        //private void StopShowingButton_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    stopShowingButton.Content = "停止显示";
-        //}
+        private void StopShowingButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            stopShowingButton.Content = "停止显示";
 
-        //private void HexadecimalDisplayCheckBox_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalSendCheckBox.IsChecked = true;
-        //}
+        }
 
-        //private void HexadecimalSendCheckBox_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalDisplayCheckBox.IsChecked = true;
-        //}
+        private void HexadecimalDisplayCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            hexadecimalSendCheckBox.IsChecked = true;
+        }
 
-        //private void HexadecimalSendCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalDisplayCheckBox.IsChecked = false;
+        private void HexadecimalSendCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            hexadecimalDisplayCheckBox.IsChecked = true;
+        }
 
-        //}
+        private void HexadecimalSendCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            hexadecimalDisplayCheckBox.IsChecked = false;
 
-        //private void HexadecimalDisplayCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalSendCheckBox.IsChecked = false;
+        }
 
-        //}
+        private void HexadecimalDisplayCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            hexadecimalSendCheckBox.IsChecked = false;
+
+        }
     }
 
 
