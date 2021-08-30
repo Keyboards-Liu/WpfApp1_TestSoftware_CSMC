@@ -120,18 +120,19 @@
         </GroupBox>
         <!--串口接收面板-->
         <GroupBox Header="接收面板" Grid.Row="2" Grid.Column="0" Margin="5" BorderBrush="Gray" BorderThickness="1">
-            <Grid VerticalAlignment="Center">
+            <Grid VerticalAlignment="Center" Margin="5">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="clearReceiveButton" Grid.RowSpan="2" Grid.Column="1" Margin="5" Content="清空接收区" Click="ClearReceiveButton_Click"/>
-                <Button Grid.Column="0" Command="Save" Content="保存文件" Margin="10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                <CheckBox x:Name="autoClearCheckBox" Margin="10,5" Content="自动清空" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
+                <StackPanel  Orientation="Vertical">
+                    <CheckBox x:Name="autoClearCheckBox" Margin="5,5,10,5" Content="自动清空" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    <Button Command="Save" Content="保存文件" Margin="5,5,10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                </StackPanel>
+                <Button x:Name="clearReceiveButton"  Grid.Column="1" Margin="5" Content="清空接收区" Click="ClearReceiveButton_Click"/>
 
                 <!--<CheckBox x:Name="hexadecimalDisplayCheckBox" Unchecked="HexadecimalDisplayCheckBox_Unchecked" Checked="HexadecimalDisplayCheckBox_Checked" Grid.Row="2" Grid.Column="0" Margin="5" Content="十六进制显示" VerticalContentAlignment="Center"/>-->
                 <!--<ToggleButton x:Name="stopShowingButton" Grid.Row="0" Grid.Column="1" Margin="5" Content="停止显示" Checked="StopShowingButton_Checked" Unchecked="StopShowingButton_Unchecked"/>-->
@@ -181,7 +182,7 @@
         <!--接收文本面板-->
         <GroupBox Header="接收文本面板" Grid.Column="1" Grid.Row="0" Margin="5" BorderBrush="Gray">
             <ScrollViewer x:Name="receiveScrollViewer" Margin="5">
-                <TextBox x:Name="receiveTextBox" IsReadOnly="True" TextChanged="ReceiveTextBox_TextChanged" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" BorderBrush="{x:Null}" BorderThickness="0"/>
+                <TextBox x:Name="receiveTextBox" IsReadOnly="True" TextWrapping="Wrap" TextAlignment="Left"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontFamily="宋体" FontSize="15" BorderBrush="{x:Null}" BorderThickness="0"/>
                 <ScrollViewer.ToolTip>
                     <ToolTip Placement="Top" Content="显示串口接收到的数据"/>
                 </ScrollViewer.ToolTip>
@@ -242,7 +243,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0"  Orientation="Horizontal">
                     <Label Content="通信协议" VerticalAlignment="Center" Width="80"/>
-                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox x:Name="comProtocol" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
                     <Label Content="网络地址" VerticalAlignment="Center" Width="80"/>
