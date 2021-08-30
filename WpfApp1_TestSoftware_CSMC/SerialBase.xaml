@@ -243,19 +243,19 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0"  Orientation="Horizontal">
                     <Label Content="通信协议" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="comProtocol" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox x:Name="resProtocol" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
                     <Label Content="网络地址" VerticalAlignment="Center" Width="80"/>
-                    <TextBox Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox x:Name="resAddress" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
-                    <Label Content="固定厂商号" VerticalAlignment="Center" Width="80"/>
-                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <Label Content="厂商号" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="resVendor" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="3" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
                     <Label Content="仪表类型" VerticalAlignment="Center" Width="80"/>
-                    <TextBox IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox x:Name="resType" IsReadOnly="True" Width="35" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="0" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
                     <Label Content="仪表组号" VerticalAlignment="Center" Width="80"/>
