@@ -221,20 +221,11 @@ namespace WpfApp1_TestSoftware_CSMC
             // 更新接收字节数
             receiveBytesCount += (uint)((receiveText.Length + 1) / 3);
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
-            switch(receiveText.Substring(0, 2))
-            {
-                case "FE":
-                    comProtocol.Text = "四信 ZigBee";
-                    break;
-                default:
-                    comProtocol.Text = "未知";
-                    comProtocol.Foreground = new SolidColorBrush(Colors.Red);
-                    break;
-            }
+
             // 在接收窗口中显示字符串
             if (receiveText.Length >= 0)
             {
-                //接收窗口自动清空
+                // 接收窗口自动清空
                 if (autoClearCheckBox.IsChecked == true)
                 {
                     receiveTextBox.Clear();
@@ -242,14 +233,48 @@ namespace WpfApp1_TestSoftware_CSMC
                 receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- " + receiveText + "\r\n");
                 try
                 {
-                frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
-                frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
-                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
-                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
-                frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, (Convert.ToInt32(frameLength.Text, 16) - 2) * 3 - 1);
-                frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
+                    // 帧头
+                    frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
+                    // 长度域
+                    frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
+                    // 命令域
+                    frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
+                    // 数据地址域
+                    frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
+                    // 数据内容域
+                    frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, (Convert.ToInt32(frameLength.Text, 16) - 2) * 3 - 1);
+                    // 校验码
+                    frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
                 }
                 catch { }
+                switch (receiveText.Substring(0, 2))
+                {
+                    case "FE":
+                        // 通信协议
+                        resProtocol.Text = "ZigBee";
+                        // 网络地址
+                        resAddress.Text = frameAddress.Text;
+                        // 厂商号
+                        resVendor.Text = "中国石化";
+                        // 仪表类型
+                        if (frameContent.Text.Substring(12, 5) == "00 02")
+                        {
+                            resType.Text = "压力型";
+                        }
+                        else if (frameContent.Text.Substring(12, 5) == "00 03")
+                        {
+                            resType.Text = "温度型";
+                        }
+                        else
+                        {
+                            resType.Text = "未知类型";
+                        }
+                        break;
+                    default:
+                        resProtocol.Text = "未知";
+                        resAddress.Foreground = new SolidColorBrush(Colors.Red);
+                        break;
+                }
             }
         }
         /// <summary>
@@ -280,13 +305,32 @@ namespace WpfApp1_TestSoftware_CSMC
                 sendTextBox.AppendText(mat.Value);
             }
             // 每输入两个字符自动添加空格
-            if (sendTextBox.Text.Length % 3 == 2)
-            {
-                sendTextBox.Text += " ";
-                sendTextBox.SelectionStart = sendTextBox.Text.Length;
-            }
+            sendTextBox.Text = sendTextBox.Text.Replace(" ", "");
+            sendTextBox.Text = string.Join(" ", Regex.Split(sendTextBox.Text, "(?<=\\G.{2})(?!$)"));
+            sendTextBox.SelectionStart = sendTextBox.Text.Length;
             e.Handled = true;
         }
+        //private void SendTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        //{
+        //    if (Key.V == e.Key && Keyboard.Modifiers == ModifierKeys.Control)
+        //    {
+        //        bool bIsPasteOperation = true;
+        //    if (true == bIsPasteOperation)
+        //    {
+        //        // 每输入两个字符自动添加空格
+        //        try
+        //    {
+        //        sendTextBox.Text = sendTextBox.Text.Replace(" ", "");
+        //        sendTextBox.Text = string.Join(" ", Regex.Split(sendTextBox.Text, "(?<=\\G.{2})(?!$)"));
+        //        sendTextBox.SelectionStart = sendTextBox.Text.Length;
+        //        e.Handled = true;
+        //    }
+        //    catch { }
+        //    }
+        //    bIsPasteOperation = false;
+        //    }
+        //}
+ 
         /// <summary>
         /// 串口数据发送逻辑
         /// </summary>
@@ -297,15 +341,16 @@ namespace WpfApp1_TestSoftware_CSMC
                 statusTextBlock.Text = "请先打开串口！";
                 return;
             }
+            // 去掉十六进制前缀
+            sendTextBox.Text.Replace("0x", "");
+            sendTextBox.Text.Replace("0X", "");
             string sendData = sendTextBox.Text;
             // 十六进制数据发送
             try
             {
-                // 去掉十六进制前缀
-                sendData.Replace("0x", "");
-                sendData.Replace("0X", "");
+
                 // 分割字符串
-                string[] strArray = sendData.Split(new char[] { ',', '，', '\r', '\n', ' ', '\t' });
+                string[] strArray = sendData.Split(new char[] {' '});
                 // 写入数据缓冲区
                 byte[] sendBuffer = new byte[strArray.Length];
                 int i = 0;
@@ -461,6 +506,10 @@ namespace WpfApp1_TestSoftware_CSMC
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
             statusSendByteTextBlock.Text = sendBytesCount.ToString();
         }
+
+
+
+
 
 
 
