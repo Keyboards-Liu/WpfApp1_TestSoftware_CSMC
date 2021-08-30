@@ -61,10 +61,12 @@ namespace WpfApp1_TestSoftware_CSMC
                 {
                     portNameComboBox.Items.Add(name);
                 }
+
             }
+            portNameComboBox.SelectedIndex = 0;
         }
         /// <summary>
-        /// 在打开串口时进行串口检测和更改
+        /// 在串口运行时进行串口检测和更改
         /// </summary>
         /// <param name="sender">事件源的对象</param>
         /// <param name="e">事件数据的对象</param>
@@ -219,9 +221,24 @@ namespace WpfApp1_TestSoftware_CSMC
             // 更新接收字节数
             receiveBytesCount += (uint)((receiveText.Length + 1) / 3);
             statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
+            switch(receiveText.Substring(0, 2))
+            {
+                case "FE":
+                    comProtocol.Text = "四信 ZigBee";
+                    break;
+                default:
+                    comProtocol.Text = "未知";
+                    comProtocol.Foreground = new SolidColorBrush(Colors.Red);
+                    break;
+            }
             // 在接收窗口中显示字符串
             if (receiveText.Length >= 0)
             {
+                //接收窗口自动清空
+                if (autoClearCheckBox.IsChecked == true)
+                {
+                    receiveTextBox.Clear();
+                }
                 receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- " + receiveText + "\r\n");
                 try
                 {
@@ -244,23 +261,6 @@ namespace WpfApp1_TestSoftware_CSMC
         {
             receiveTextBox.Clear();
         }
-        /// <summary>
-        /// 接收窗口自动清空功能
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ReceiveTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (receiveTextBox.LineCount >= 50 && autoClearCheckBox.IsChecked == true)
-            {
-                receiveTextBox.Clear();
-            }
-            else
-            {
-                receiveScrollViewer.ScrollToEnd();
-            }
-        }
-
         #endregion
 
         #region 串口数据发送/定时发送/窗口清空功能
