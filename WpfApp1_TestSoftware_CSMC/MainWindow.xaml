@@ -11,11 +11,11 @@
         MinHeight="600 " MinWidth="800"
         MaxHeight="600 " MaxWidth="800">
     <Grid>
-        <TabControl Name="tabControl" SelectionChanged="TabControl_SelectionChanged" >
-            <TabItem Header="串口通信" MinHeight="10" MinWidth="40">
+        <!--<TabControl Name="tabControl" SelectionChanged="TabControl_SelectionChanged" >
+            <TabItem Header="串口通信" MinHeight="10" MinWidth="40">-->
                 <local:SerialBase Loaded="SerialBaseUserControl_Loaded"></local:SerialBase>
-            </TabItem>
-        </TabControl>
+            <!--</TabItem>
+        </TabControl>-->
 
     </Grid>
 </Window>
