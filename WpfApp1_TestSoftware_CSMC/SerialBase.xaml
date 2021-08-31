@@ -303,10 +303,10 @@
         </GroupBox>
 
         <!--状态栏-->
-        <StatusBar Grid.Row="5" Grid.ColumnSpan="2">
+        <StatusBar Grid.Row="5" Grid.ColumnSpan="2" Padding="0" VerticalAlignment="Bottom">
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Grid VerticalAlignment="Top">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition/>
@@ -318,7 +318,7 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <StatusBarItem Grid.Column="0" VerticalAlignment="Stretch" Margin="5,0">
+            <StatusBarItem Grid.Column="0" VerticalAlignment="Stretch" Margin="5,0,-50,0">
                 <!--提示栏-->
                 <TextBlock x:Name="statusTextBlock" Foreground="Red"/>
             </StatusBarItem>
