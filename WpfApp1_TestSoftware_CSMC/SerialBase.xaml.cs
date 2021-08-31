@@ -243,7 +243,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     // 数据地址域
                     frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
                     // 数据内容域
-                    frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, (Convert.ToInt32(frameLength.Text, 16) - 2) * 3 - 1);
+                    frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, ((Convert.ToInt32(frameLength.Text, 16) - 2) * 3) - 1);
                     // 校验码
                     frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
                 }
@@ -264,11 +264,12 @@ namespace WpfApp1_TestSoftware_CSMC
                             case "FE":
                                 {
                                     // 通信协议
-                                    resProtocol.Text = "ZigBee";
+                                    resProtocol.Text = "四信ZigBee";
                                     // 网络地址
                                     resAddress.Text = frameAddress.Text;
                                     // 厂商号
-                                    resVendor.Text = "中国石化";
+                                    Console.WriteLine(Convert.ToInt32(frameContent.Text.Substring(6, 2).Replace(" ", ""), 16));
+                                    resVendor.Text = "厂商" + Convert.ToInt32(frameContent.Text.Substring(6,2).Replace(" ",""), 16);
                                     // 仪表类型
                                     {
                                         if (frameContent.Text.Substring(12, 5) == "00 02") resType.Text = "压力型";
