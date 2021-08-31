@@ -231,6 +231,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     receiveTextBox.Clear();
                 }
                 receiveTextBox.AppendText(DateTime.Now.ToString() + " <-- " + receiveText + "\r\n");
+                // 接收文本解析面板写入
                 try
                 {
                     // 帧头
@@ -247,34 +248,72 @@ namespace WpfApp1_TestSoftware_CSMC
                     frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
                 }
                 catch { }
-                switch (receiveText.Substring(0, 2))
+                // 仪表参数解析面板写入
+                try
                 {
-                    case "FE":
-                        // 通信协议
-                        resProtocol.Text = "ZigBee";
-                        // 网络地址
-                        resAddress.Text = frameAddress.Text;
-                        // 厂商号
-                        resVendor.Text = "中国石化";
-                        // 仪表类型
-                        if (frameContent.Text.Substring(12, 5) == "00 02")
+                    // 字符串校验
+                    string j = "";
+                    string[] hexvalue = receiveText.Trim().Split(' ');
+                    // 求字符串异或值
+                    foreach (string hex in hexvalue) j = HexStrXor(j, hex);
+                    if (j == frameHeader.Text)
+                    {
+                        resCRC.Text = "通过";
+                        switch (receiveText.Substring(0, 2))
                         {
-                            resType.Text = "压力型";
+                            case "FE":
+                                {
+                                    // 通信协议
+                                    resProtocol.Text = "ZigBee";
+                                    // 网络地址
+                                    resAddress.Text = frameAddress.Text;
+                                    // 厂商号
+                                    resVendor.Text = "中国石化";
+                                    // 仪表类型
+                                    {
+                                        if (frameContent.Text.Substring(12, 5) == "00 02") resType.Text = "压力型";
+                                        else if (frameContent.Text.Substring(12, 5) == "00 03") resType.Text = "温度型";
+                                        else resType.Text = "未知类型";
+                                    }
+                                    // 仪表组号
+                                    resGroup.Text = frameContent.Text.Substring(18, 5);
+                                    // 数据类型
+                                    resDataType.Text = frameContent.Text.Substring(24, 5);
+                                    // 通信成功率
+                                    resSucRate.Text = frameContent.Text.Substring(30, 2);
+                                    // 电池电压
+                                    resBatVol.Text = frameContent.Text.Substring(33, 2);
+                                    // 休眠时间
+                                    resSleepTime.Text = frameContent.Text.Substring(36, 5);
+                                    // 仪表状态
+                                    resStatue.Text = frameContent.Text.Substring(42, 5);
+                                    // 实时数据
+                                    resData.Text = frameContent.Text.Substring(48, 11);
+
+                                }
+                                break;
+                            default:
+                                resProtocol.Text = "未知";
+                                resAddress.Foreground = new SolidColorBrush(Colors.Red);
+                                break;
                         }
-                        else if (frameContent.Text.Substring(12, 5) == "00 03")
-                        {
-                            resType.Text = "温度型";
-                        }
-                        else
-                        {
-                            resType.Text = "未知类型";
-                        }
-                        break;
-                    default:
-                        resProtocol.Text = "未知";
-                        resAddress.Foreground = new SolidColorBrush(Colors.Red);
-                        break;
+                    }
+                    else
+                    {
+                        // 清空解析面板
+                        resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
+                        resType.Clear(); resGroup.Clear(); resDataType.Clear();
+                        resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
+                        resStatue.Clear(); resData.Clear(); resCRC.Clear();
+                        resCRC.Text = "未通过";
+                        resCRC.Foreground = new SolidColorBrush(Colors.Red);
+                    }
                 }
+                catch
+                {
+
+                }
+
             }
         }
         /// <summary>
@@ -330,7 +369,7 @@ namespace WpfApp1_TestSoftware_CSMC
         //    bIsPasteOperation = false;
         //    }
         //}
- 
+
         /// <summary>
         /// 串口数据发送逻辑
         /// </summary>
@@ -350,7 +389,7 @@ namespace WpfApp1_TestSoftware_CSMC
             {
 
                 // 分割字符串
-                string[] strArray = sendData.Split(new char[] {' '});
+                string[] strArray = sendData.Split(new char[] { ' ' });
                 // 写入数据缓冲区
                 byte[] sendBuffer = new byte[strArray.Length];
                 int i = 0;
@@ -508,7 +547,68 @@ namespace WpfApp1_TestSoftware_CSMC
         }
 
 
+        public static string HexStrXor(string HexStr1, string HexStr2)
+        {
+            //两个十六进制字符串的长度和长度差的绝对值以及异或结果
+            int iHexStr1Len = HexStr1.Length;
+            int iHexStr2Len = HexStr2.Length;
+            int iGap, iHexStrLenLow;
+            string result = string.Empty;
 
+            //获取这两个十六进制字符串长度的差值
+            iGap = iHexStr1Len - iHexStr2Len;
+
+            //获取这两个十六进制字符串长度最小的那一个
+            iHexStrLenLow = iHexStr1Len < iHexStr2Len ? iHexStr1Len : iHexStr2Len;
+
+            //将这两个字符串转换成字节数组
+            byte[] bHexStr1 = HexStrToBytes(HexStr1);
+            byte[] bHexStr2 = HexStrToBytes(HexStr2);
+
+            /**
+             * 把这两个十六进制字符串输出到控制台
+             * Console.WriteLine("HexStr1=[{0}]", HexStr1);
+             * Console.WriteLine("HexStr2=[{0}]", HexStr2);
+             */
+
+            int i = 0;
+            //先把每个字节异或后得到一个0~15范围内的整数，再转换成十六进制字符
+            for (; i < iHexStrLenLow; ++i)
+            {
+                result += (bHexStr1[i] ^ bHexStr2[i]).ToString("X");
+            }
+
+            result += iGap >= 0 ? HexStr1.Substring(i, iGap) : HexStr2.Substring(i, -iGap);
+            return result;
+        }
+        //将16进制字符串转换成字节数组
+        public static byte[] HexStrToBytes(string HexStr)
+        {
+            if (HexStr == null)
+            {
+                throw new ArgumentNullException(nameof(HexStr));
+            }
+
+            byte[] Bytes = new byte[HexStr.Length];
+            try
+            {
+                for (int i = 0; i < Bytes.Length; ++i)
+                {
+                    //将每个16进制字符转换成对应的1个字节
+                    Bytes[i] = Convert.ToByte(HexStr.Substring(i, 1), 16);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+                /**
+                 * 把错误信息输出到控制台
+                 * Console.WriteLine("Exception {0} thrown.", e.GetType().FullName);
+                 * Console.WriteLine("Message:{0}", e.Message);
+                 */
+            }
+            return Bytes;
+        }
 
 
 
