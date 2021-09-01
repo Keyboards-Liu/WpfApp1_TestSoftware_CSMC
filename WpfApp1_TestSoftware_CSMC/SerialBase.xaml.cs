@@ -266,18 +266,78 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 通信协议
                                     resProtocol.Text = "四信ZigBee";
                                     // 网络地址
-                                    resAddress.Text = frameAddress.Text;
+
+                                    int intframeContentAddress = Convert.ToInt32((frameAddress.Text.Substring(3, 2) + frameAddress.Text.Substring(0, 2)).Replace(" ", ""), 16);
+                                    resAddress.Text = intframeContentAddress.ToString();
                                     // 厂商号
-                                    Console.WriteLine(Convert.ToInt32(frameContent.Text.Substring(6, 2).Replace(" ", ""), 16));
-                                    resVendor.Text = "厂商" + Convert.ToInt32(frameContent.Text.Substring(6,2).Replace(" ",""), 16);
-                                    // 仪表类型
+                                    // 1 0x0001 厂商1
+                                    // 2 0x0002 厂商2
+                                    // 3 0x0003 厂商3
+                                    // 4 ......
+                                    // N 0x8001~0xFFFF 预留
+                                    string frameContentVendor = frameContent.Text.Substring(6, 5).Replace(" ", "");
+                                    int intframeContentVendor = Convert.ToInt32(frameContentVendor, 16);
+                                    if (intframeContentVendor < 0x8001)
                                     {
-                                        if (frameContent.Text.Substring(12, 5) == "00 02") resType.Text = "压力型";
-                                        else if (frameContent.Text.Substring(12, 5) == "00 03") resType.Text = "温度型";
-                                        else resType.Text = "未知类型";
+                                        resVendor.Text = "厂商" + intframeContentVendor;
+                                    }
+                                    else
+                                        resVendor.Text = "预留厂商";
+
+                                    // 仪表类型
+                                    // 1  0x0001 无线一体化负荷
+                                    // 2  0x0002 无线压力
+                                    // 3  0x0003 无线温度
+                                    // 4  0x0004 无线电量
+                                    // 5  0x0005 无线角位移
+                                    // 6  0x0006 无线载荷
+                                    // 7  0x0007 无线扭矩
+                                    // 8  0x0008 无线动液面
+                                    // 9  0x0009 计量车
+                                    //    0x000B 无线压力温度一体化变送器
+                                    //    ......
+                                    // 10 0x1f00 控制器(RTU)设备
+                                    // 11 0x1f10 手操器
+                                    // 12 ......
+                                    // N  0x2000~0x4000 自定义
+                                    //    0x2000 无线死点开关
+                                    //    0x3000 无线拉线位移校准传感器
+                                    //    0x3001 无线拉线位移功图校准传感器
+                                    string frameContentType = frameContent.Text.Substring(12, 5).Replace(" ", "");
+                                    int intframeContentType = Convert.ToInt32(frameContentType, 16);
+                                    switch (intframeContentType)
+                                    {
+
+                                        case 0x0001: resType.Text = "无线一体化负荷"; break;
+                                        case 0x0002: resType.Text = "无线压力"; break;
+                                        case 0x0003: resType.Text = "无线温度"; break;
+                                        case 0x0004: resType.Text = "无线电量"; break;
+                                        case 0x0005: resType.Text = "无线角位移"; break;
+                                        case 0x0006: resType.Text = "无线载荷"; break;
+                                        case 0x0007: resType.Text = "无线扭矩"; break;
+                                        case 0x0008: resType.Text = "无线动液面"; break;
+                                        case 0x0009: resType.Text = "计量车"; break;
+                                        case 0x000B: resType.Text = "无线压力温度一体化变送器"; break;
+                                        case 0x1F00: resType.Text = "控制器(RTU)设备"; break;
+                                        case 0x1F10: resType.Text = "手操器"; break;
+                                        // 自定义
+                                        case 0x2000: resType.Text = "温度型"; break;
+                                        case 0x3000: resType.Text = "无线拉线位移校准传感器"; break;
+                                        case 0x3001: resType.Text = "无线拉线位移功图校准传感器"; break;
+                                        default: resType.Clear(); break;
+                                    }
+
+                                    if (resType.Text.Trim() == string.Empty && intframeContentType <= 0x4000 && intframeContentType >= 0x3000)
+                                    {
+                                        resType.Text = "自定义";
+                                    }
+                                    else
+                                    {
+                                        resType.Text = "未定义类型";
+                                        resType.Foreground = new SolidColorBrush(Colors.Red);
                                     }
                                     // 仪表组号
-                                    resGroup.Text = frameContent.Text.Substring(18, 5);
+                                    resGroup.Text = Convert.ToInt32(frameContent.Text.Substring(18, 2).Replace(" ", ""), 16) + "组" + Convert.ToInt32(frameContent.Text.Substring(21, 2).Replace(" ", ""), 16) + "号";
                                     // 数据类型
                                     resDataType.Text = frameContent.Text.Substring(24, 5);
                                     // 通信成功率
@@ -290,7 +350,6 @@ namespace WpfApp1_TestSoftware_CSMC
                                     resStatue.Text = frameContent.Text.Substring(42, 5);
                                     // 实时数据
                                     resData.Text = frameContent.Text.Substring(48, 11);
-
                                 }
                                 break;
                             default:
@@ -350,27 +409,6 @@ namespace WpfApp1_TestSoftware_CSMC
             sendTextBox.SelectionStart = sendTextBox.Text.Length;
             e.Handled = true;
         }
-        //private void SendTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        //{
-        //    if (Key.V == e.Key && Keyboard.Modifiers == ModifierKeys.Control)
-        //    {
-        //        bool bIsPasteOperation = true;
-        //    if (true == bIsPasteOperation)
-        //    {
-        //        // 每输入两个字符自动添加空格
-        //        try
-        //    {
-        //        sendTextBox.Text = sendTextBox.Text.Replace(" ", "");
-        //        sendTextBox.Text = string.Join(" ", Regex.Split(sendTextBox.Text, "(?<=\\G.{2})(?!$)"));
-        //        sendTextBox.SelectionStart = sendTextBox.Text.Length;
-        //        e.Handled = true;
-        //    }
-        //    catch { }
-        //    }
-        //    bIsPasteOperation = false;
-        //    }
-        //}
-
         /// <summary>
         /// 串口数据发送逻辑
         /// </summary>
