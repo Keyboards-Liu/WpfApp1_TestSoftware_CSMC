@@ -263,93 +263,234 @@ namespace WpfApp1_TestSoftware_CSMC
                         {
                             case "FE":
                                 {
-                                    // 通信协议
-                                    resProtocol.Text = "四信ZigBee";
-                                    // 网络地址
-
-                                    int intframeContentAddress = Convert.ToInt32((frameAddress.Text.Substring(3, 2) + frameAddress.Text.Substring(0, 2)).Replace(" ", ""), 16);
-                                    resAddress.Text = intframeContentAddress.ToString();
-                                    // 厂商号
-                                    // 1 0x0001 厂商1
-                                    // 2 0x0002 厂商2
-                                    // 3 0x0003 厂商3
-                                    // 4 ......
-                                    // N 0x8001~0xFFFF 预留
-                                    string frameContentVendor = frameContent.Text.Substring(6, 5).Replace(" ", "");
-                                    int intframeContentVendor = Convert.ToInt32(frameContentVendor, 16);
-                                    if (intframeContentVendor < 0x8001)
+                                    // 无线仪表帧头
+                                    try
                                     {
-                                        resVendor.Text = "厂商" + intframeContentVendor;
-                                    }
-                                    else
-                                        resVendor.Text = "预留厂商";
+                                        // 通信协议
+                                        try
+                                        {
+                                            // 1 0x0001 ZigBee SZ9-GRM V3.01油田专用通讯协议
+                                            string frameProtocol = frameContent.Text.Substring(0, 5).Replace(" ", "");
+                                            int intFrameProtocol = Convert.ToInt32(frameProtocol, 16);
+                                            switch (intFrameProtocol)
+                                            {
+                                                case 0x0001: resProtocol.Text = "ZigBee SZ9-GRM V3.01油田专用通讯协议"; break;
+                                                default:
+                                                    resProtocol.Text = "未知";
+                                                    resProtocol.Foreground = new SolidColorBrush(Colors.Red); break;
+                                            }
+                                        }
+                                        catch { }
+                                        // 网络地址
+                                        try
+                                        {
+                                            string frameContentAddress = (frameAddress.Text.Substring(3, 2) + frameAddress.Text.Substring(0, 2)).Replace(" ", "");
+                                            int intFrameContentAddress = Convert.ToInt32(frameContentAddress, 16);
+                                            resAddress.Text = intFrameContentAddress.ToString();
+                                        }
+                                        catch { }
+                                        // 厂商号
+                                        try
+                                        {
+                                            string frameContentVendor = frameContent.Text.Substring(6, 5).Replace(" ", "");
+                                            int intFrameContentVendor = Convert.ToInt32(frameContentVendor, 16);
+                                            // 1 0x0001 厂商1
+                                            // 2 0x0002 厂商2
+                                            // 3 0x0003 厂商3
+                                            // 4 ......
+                                            // N 0x8001~0xFFFF 预留
+                                            if (intFrameContentVendor > 0x0000 && intFrameContentVendor < 0x8001)
+                                            {
+                                                resVendor.Text = "厂商" + intFrameContentVendor;
+                                            }
+                                            else if (intFrameContentVendor >= 0x8001 && intFrameContentVendor <= 0xFFFF)
+                                                resVendor.Text = "预留厂商";
+                                            else
+                                            {
+                                                resVendor.Text = "未定义";
+                                                resVendor.Foreground = new SolidColorBrush(Colors.Red);
+                                            }
+                                        }
+                                        catch { }
+                                        // 仪表类型
+                                        try
+                                        {
+                                            string frameContentType = frameContent.Text.Substring(12, 5).Replace(" ", "");
+                                            int intFrameContentType = Convert.ToInt32(frameContentType, 16);
+                                            // 1  0x0001 无线一体化负荷
+                                            // 2  0x0002 无线压力
+                                            // 3  0x0003 无线温度
+                                            // 4  0x0004 无线电量
+                                            // 5  0x0005 无线角位移
+                                            // 6  0x0006 无线载荷
+                                            // 7  0x0007 无线扭矩
+                                            // 8  0x0008 无线动液面
+                                            // 9  0x0009 计量车
+                                            //    0x000B 无线压力温度一体化变送器
+                                            //    ......
+                                            // 10 0x1f00 控制器(RTU)设备
+                                            // 11 0x1f10 手操器
+                                            // 12 ......
+                                            // N  0x2000~0x4000 自定义
+                                            //    0x2000 无线死点开关
+                                            //    0x3000 无线拉线位移校准传感器
+                                            //    0x3001 无线拉线位移功图校准传感器
+                                            switch (intFrameContentType)
+                                            {
 
-                                    // 仪表类型
-                                    // 1  0x0001 无线一体化负荷
-                                    // 2  0x0002 无线压力
-                                    // 3  0x0003 无线温度
-                                    // 4  0x0004 无线电量
-                                    // 5  0x0005 无线角位移
-                                    // 6  0x0006 无线载荷
-                                    // 7  0x0007 无线扭矩
-                                    // 8  0x0008 无线动液面
-                                    // 9  0x0009 计量车
-                                    //    0x000B 无线压力温度一体化变送器
-                                    //    ......
-                                    // 10 0x1f00 控制器(RTU)设备
-                                    // 11 0x1f10 手操器
-                                    // 12 ......
-                                    // N  0x2000~0x4000 自定义
-                                    //    0x2000 无线死点开关
-                                    //    0x3000 无线拉线位移校准传感器
-                                    //    0x3001 无线拉线位移功图校准传感器
-                                    string frameContentType = frameContent.Text.Substring(12, 5).Replace(" ", "");
-                                    int intframeContentType = Convert.ToInt32(frameContentType, 16);
-                                    switch (intframeContentType)
-                                    {
+                                                case 0x0001: resType.Text = "无线一体化负荷"; break;
+                                                case 0x0002: resType.Text = "无线压力"; break;
+                                                case 0x0003: resType.Text = "无线温度"; break;
+                                                case 0x0004: resType.Text = "无线电量"; break;
+                                                case 0x0005: resType.Text = "无线角位移"; break;
+                                                case 0x0006: resType.Text = "无线载荷"; break;
+                                                case 0x0007: resType.Text = "无线扭矩"; break;
+                                                case 0x0008: resType.Text = "无线动液面"; break;
+                                                case 0x0009: resType.Text = "计量车"; break;
+                                                case 0x000B: resType.Text = "无线压力温度一体化变送器"; break;
+                                                case 0x1F00: resType.Text = "控制器(RTU)设备"; break;
+                                                case 0x1F10: resType.Text = "手操器"; break;
+                                                // 自定义
+                                                case 0x2000: resType.Text = "温度型"; break;
+                                                case 0x3000: resType.Text = "无线拉线位移校准传感器"; break;
+                                                case 0x3001: resType.Text = "无线拉线位移功图校准传感器"; break;
+                                                default: resType.Clear(); break;
+                                            }
+                                            while (resType.Text.Trim() == string.Empty)
+                                            {
+                                                if (intFrameContentType <= 0x4000 && intFrameContentType >= 0x3000)
+                                                {
+                                                    resType.Text = "自定义";
+                                                }
+                                                else
+                                                {
+                                                    resType.Text = "未定义";
+                                                    resType.Foreground = new SolidColorBrush(Colors.Red);
 
-                                        case 0x0001: resType.Text = "无线一体化负荷"; break;
-                                        case 0x0002: resType.Text = "无线压力"; break;
-                                        case 0x0003: resType.Text = "无线温度"; break;
-                                        case 0x0004: resType.Text = "无线电量"; break;
-                                        case 0x0005: resType.Text = "无线角位移"; break;
-                                        case 0x0006: resType.Text = "无线载荷"; break;
-                                        case 0x0007: resType.Text = "无线扭矩"; break;
-                                        case 0x0008: resType.Text = "无线动液面"; break;
-                                        case 0x0009: resType.Text = "计量车"; break;
-                                        case 0x000B: resType.Text = "无线压力温度一体化变送器"; break;
-                                        case 0x1F00: resType.Text = "控制器(RTU)设备"; break;
-                                        case 0x1F10: resType.Text = "手操器"; break;
-                                        // 自定义
-                                        case 0x2000: resType.Text = "温度型"; break;
-                                        case 0x3000: resType.Text = "无线拉线位移校准传感器"; break;
-                                        case 0x3001: resType.Text = "无线拉线位移功图校准传感器"; break;
-                                        default: resType.Clear(); break;
-                                    }
+                                                }
+                                            }
+                                        }
+                                        catch { }
+                                        // 仪表组号
+                                        try
+                                        {
+                                            resGroup.Text = Convert.ToInt32(frameContent.Text.Substring(18, 2).Replace(" ", ""), 16) + "组" + Convert.ToInt32(frameContent.Text.Substring(21, 2).Replace(" ", ""), 16) + "号";
+                                        }
+                                        catch { }
+                                        // 数据类型
+                                        try
+                                        {
+                                            string frameContentFunctionData = frameContent.Text.Substring(24, 5).Replace(" ", "");
+                                            int intFrameContentFunctionData = Convert.ToInt32(frameContentFunctionData, 16);
+                                            // 1  0x0000 常规数据
+                                            // 2  ……
+                                            // 3  0x0010 仪表参数
+                                            // 4  ……
+                                            // 5  0x0020 读数据命令
+                                            // 6 
+                                            // 7  ……
+                                            // 8 
+                                            // 9 
+                                            // 10 ……
+                                            // 11 
+                                            // 12 ……
+                                            // 13 0x0100 控制器参数写应答（控制器应答命令）
+                                            // 14 0x0101 控制器读仪表参数应答（控制器应答命令）
+                                            // 15 ……
+                                            // 16 0x0200 控制器应答一体化载荷位移示功仪功图参数应答（控制器应答命令触发功图采集）
+                                            // 17 0x0201 控制器应答功图数据命令
+                                            // 18 0x0202 控制器读功图数据应答（控制器应答命令读已有功图）
+                                            // 19 ……
+                                            // 20 0x0300 控制器(RTU)对仪表控制命令
+                                            // 21 0x400~0x47f 配置协议命令
+                                            // 22 0x480~0x5ff 标定协议命令
+                                            // 23 0x1000~0x2000 厂家自定义数据类型
+                                            // 24 ……
+                                            // 25 0x8000－0xffff 预留
+                                            switch (intFrameContentFunctionData)
+                                            {
+                                                case 0x0000: resFunctionData.Text = "常规数据"; break;
+                                                case 0x0010: resFunctionData.Text = "仪表参数"; break;
+                                                case 0x0020: resFunctionData.Text = "读数据命令"; break;
+                                                case 0x0100: resFunctionData.Text = "控制器参数写应答（控制器应答命令）"; break;
+                                                case 0x0101: resFunctionData.Text = "控制器读仪表参数应答（控制器应答命令）"; break;
+                                                case 0x0200: resFunctionData.Text = "控制器应答一体化载荷位移示功仪功图参数应答（控制器应答命令触发功图采集）"; break;
+                                                case 0x0201: resFunctionData.Text = "控制器应答功图数据命令"; break;
+                                                case 0x0202: resFunctionData.Text = "控制器读功图数据应答（控制器应答命令读已有功图）"; break;
+                                                case 0x0300: resFunctionData.Text = "控制器(RTU)对仪表控制命令"; break;
+                                                default: resType.Clear(); break;
+                                            }
+                                            while (resType.Text.Trim() == string.Empty)
+                                            {
 
-                                    if (resType.Text.Trim() == string.Empty && intframeContentType <= 0x4000 && intframeContentType >= 0x3000)
-                                    {
-                                        resType.Text = "自定义";
+                                                if (intFrameContentFunctionData >= 0x400 && intFrameContentFunctionData <= 0x47f)
+                                                {
+                                                    resFunctionData.Text = "配置协议命令";
+                                                }
+                                                else if (intFrameContentFunctionData >= 0x480 && intFrameContentFunctionData <= 0x5ff)
+                                                {
+                                                    resFunctionData.Text = "标定协议命令";
+                                                }
+                                                else if (intFrameContentFunctionData >= 0x1000 && intFrameContentFunctionData <= 0x2000)
+                                                {
+                                                    resFunctionData.Text = "厂家自定义数据类型";
+                                                }
+                                                else if (intFrameContentFunctionData >= 0x8000 && intFrameContentFunctionData <= 0xffff)
+                                                {
+                                                    resFunctionData.Text = "预留";
+                                                }
+                                                else
+                                                {
+                                                    resFunctionData.Text = "未定义";
+                                                    resFunctionData.Foreground = new SolidColorBrush(Colors.Red);
+                                                }
+                                            }
+                                        }
+                                        catch { }
                                     }
-                                    else
+                                    catch { }
+                                    // 无线仪表数据段
+                                    try
                                     {
-                                        resType.Text = "未定义类型";
-                                        resType.Foreground = new SolidColorBrush(Colors.Red);
+                                        // 通信效率
+                                        try
+                                        {
+                                            resSucRate.Text = Convert.ToInt32(frameContent.Text.Substring(30, 2), 16).ToString() + "%";
+                                        }
+                                        catch { }
+                                        // 电池电压
+                                        try
+                                        {
+                                            resBatVol.Text = Convert.ToInt32(frameContent.Text.Substring(33, 2), 16) + "%";
+                                        }
+                                        catch { }
+                                        // 休眠时间
+                                        try
+                                        {
+                                            resSleepTime.Text = Convert.ToInt32(frameContent.Text.Substring(36, 5), 16) + "秒";
+                                        }
+                                        catch { }
+                                        // 仪表状态
+                                        try
+                                        {
+                                            //string frameStatue = frameContent.Text.Substring(42, 5).Replace(" ", "");
+                                            //string binFrameStatue = Convert.ToString(Convert.ToInt32(frameStatue, 16), 2).PadLeft(4, '0');
+                                            //if (binFrameStatue.Substring(3,1) == "1")
+                                            //{
+
+                                            //}
+                                            resStatue.Text = frameContent.Text.Substring(42, 5);
+                                        }
+                                        catch { }
+                                        // 实时数据
+                                        try
+                                        {
+                                            resData.Text = frameContent.Text.Substring(48, 11);
+                                        }
+                                        catch { }
                                     }
-                                    // 仪表组号
-                                    resGroup.Text = Convert.ToInt32(frameContent.Text.Substring(18, 2).Replace(" ", ""), 16) + "组" + Convert.ToInt32(frameContent.Text.Substring(21, 2).Replace(" ", ""), 16) + "号";
-                                    // 数据类型
-                                    resDataType.Text = frameContent.Text.Substring(24, 5);
-                                    // 通信成功率
-                                    resSucRate.Text = frameContent.Text.Substring(30, 2);
-                                    // 电池电压
-                                    resBatVol.Text = frameContent.Text.Substring(33, 2);
-                                    // 休眠时间
-                                    resSleepTime.Text = frameContent.Text.Substring(36, 5);
-                                    // 仪表状态
-                                    resStatue.Text = frameContent.Text.Substring(42, 5);
-                                    // 实时数据
-                                    resData.Text = frameContent.Text.Substring(48, 11);
+                                    catch { }
+
                                 }
                                 break;
                             default:
@@ -362,7 +503,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     {
                         // 清空解析面板
                         resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
-                        resType.Clear(); resGroup.Clear(); resDataType.Clear();
+                        resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
                         resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
                         resStatue.Clear(); resData.Clear(); resCRC.Clear();
                         resCRC.Text = "未通过";
