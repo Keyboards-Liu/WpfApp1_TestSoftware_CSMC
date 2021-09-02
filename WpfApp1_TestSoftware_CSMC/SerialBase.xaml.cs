@@ -210,7 +210,7 @@ namespace WpfApp1_TestSoftware_CSMC
             }
             receiveData = receiveData.Trim();
             // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
-            Dispatcher.Invoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+            Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
         }
         /// <summary>
         /// 接收窗口显示功能
@@ -251,20 +251,19 @@ namespace WpfApp1_TestSoftware_CSMC
                 // 仪表参数解析面板写入
                 try
                 {
-                    //// 字符串校验
-                    //string j = "";
-                    //string[] hexvalue = receiveText.Trim().Split(' ');
-                    //// 求字符串异或值
-                    //foreach (string hex in hexvalue) j = HexStrXor(j, hex);
-                    //if (j == frameHeader.Text)
-                    //{
+                    // 字符串校验
+                    string j = "";
+                    string[] hexvalue = receiveText.Trim().Split(' ');
+                    // 求字符串异或值
+                    foreach (string hex in hexvalue) j = HexStrXor(j, hex);
+                    if (j == frameHeader.Text)
+                    {
                         resCRC.Text = "通过";
                         switch (receiveText.Substring(0, 2))
                         {
                             case "FE":
                                 {
                                     // 无线仪表帧头
-
                                     {
                                         // 通信协议
                                         try
@@ -487,11 +486,12 @@ namespace WpfApp1_TestSoftware_CSMC
                                             // 6 Bit5 AI2 上限报警
                                             // 7 Bit6 AI2 下限报警
                                             // 8 Bit7 预留
-                                            for (int a = 7; a >= 0; a--)
+                                            for (int a = 0; a < 8; a++)
+                                            // 从第0位到第7位
                                             {
-                                                if (binFrameStatue.Substring(7 - a, 1) == "1")
+                                                if (binFrameStatue.Substring(a, 1) == "1")
                                                 {
-                                                    switch (7 - a)
+                                                    switch (a)
                                                     {
                                                         case 0: failureMessage += ++count + " 仪表故障\n"; break;
                                                         case 1: failureMessage += ++count + " 参数故障\n"; break;
@@ -500,7 +500,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                                         case 4: failureMessage += ++count + " 压力下限报警\n"; break;
                                                         case 5: failureMessage += ++count + " 温度上限报警\n"; break;
                                                         case 6: failureMessage += ++count + " 温度下限报警\n"; break;
-                                                        case 7: failureMessage += ""; break;
+                                                        case 7: failureMessage += ++count + " 未定义故障\n"; break;
                                                         default: failureMessage += "参数错误\n"; break;
                                                     }
                                                 }
@@ -520,6 +520,13 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 实时数据
                                     try
                                     {
+                                        // 浮点数
+                                        //string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
+                                        //string binFrameData = Convert.ToString(Convert.ToInt32(frameresData, 16), 2).PadLeft(32, '0');
+                                        //int flFrameData_Sign = (1 - Convert.ToInt32(binFrameData.Substring(0, 1), 2) * 2);
+                                        //int flFrameData_Exp = Convert.ToInt32(binFrameData.Substring(1, 8), 2) - 127;
+                                        //float flFrameData_Mant = ;
+
                                         resData.Text = frameContent.Text.Substring(48, 11);
                                     }
                                     catch { }
@@ -533,17 +540,17 @@ namespace WpfApp1_TestSoftware_CSMC
                                 resAddress.Foreground = new SolidColorBrush(Colors.Red);
                                 break;
                         }
-                    //}
-                    //    else
-                    //    {
-                    //        // 清空解析面板
-                    //        resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
-                    //        resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
-                    //        resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
-                    //        resStatue.Clear(); resData.Clear(); resCRC.Clear();
-                    //        resCRC.Text = "未通过";
-                    //        resCRC.Foreground = new SolidColorBrush(Colors.Red);
-                    //    }
+                    }
+                    else
+                    {
+                        // 清空解析面板
+                        resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
+                        resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
+                        resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
+                        resStatue.Clear(); resData.Clear(); resCRC.Clear();
+                        resCRC.Text = "未通过";
+                        resCRC.Foreground = new SolidColorBrush(Colors.Red);
+                    }
                 }
                 catch
                 {
