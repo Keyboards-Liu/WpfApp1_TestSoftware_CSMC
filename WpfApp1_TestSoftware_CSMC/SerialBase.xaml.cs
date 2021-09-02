@@ -251,20 +251,20 @@ namespace WpfApp1_TestSoftware_CSMC
                 // 仪表参数解析面板写入
                 try
                 {
-                    // 字符串校验
-                    string j = "";
-                    string[] hexvalue = receiveText.Trim().Split(' ');
-                    // 求字符串异或值
-                    foreach (string hex in hexvalue) j = HexStrXor(j, hex);
-                    if (j == frameHeader.Text)
-                    {
+                    //// 字符串校验
+                    //string j = "";
+                    //string[] hexvalue = receiveText.Trim().Split(' ');
+                    //// 求字符串异或值
+                    //foreach (string hex in hexvalue) j = HexStrXor(j, hex);
+                    //if (j == frameHeader.Text)
+                    //{
                         resCRC.Text = "通过";
                         switch (receiveText.Substring(0, 2))
                         {
                             case "FE":
                                 {
                                     // 无线仪表帧头
-                                    try
+
                                     {
                                         // 通信协议
                                         try
@@ -448,48 +448,83 @@ namespace WpfApp1_TestSoftware_CSMC
                                         }
                                         catch { }
                                     }
-                                    catch { }
+
                                     // 无线仪表数据段
+
+                                    // 通信效率
                                     try
                                     {
-                                        // 通信效率
-                                        try
-                                        {
-                                            resSucRate.Text = Convert.ToInt32(frameContent.Text.Substring(30, 2), 16).ToString() + "%";
-                                        }
-                                        catch { }
-                                        // 电池电压
-                                        try
-                                        {
-                                            resBatVol.Text = Convert.ToInt32(frameContent.Text.Substring(33, 2), 16) + "%";
-                                        }
-                                        catch { }
-                                        // 休眠时间
-                                        try
-                                        {
-                                            resSleepTime.Text = Convert.ToInt32(frameContent.Text.Substring(36, 5), 16) + "秒";
-                                        }
-                                        catch { }
-                                        // 仪表状态
-                                        try
-                                        {
-                                            //string frameStatue = frameContent.Text.Substring(42, 5).Replace(" ", "");
-                                            //string binFrameStatue = Convert.ToString(Convert.ToInt32(frameStatue, 16), 2).PadLeft(4, '0');
-                                            //if (binFrameStatue.Substring(3,1) == "1")
-                                            //{
-
-                                            //}
-                                            resStatue.Text = frameContent.Text.Substring(42, 5);
-                                        }
-                                        catch { }
-                                        // 实时数据
-                                        try
-                                        {
-                                            resData.Text = frameContent.Text.Substring(48, 11);
-                                        }
-                                        catch { }
+                                        resSucRate.Text = Convert.ToInt32(frameContent.Text.Substring(30, 2), 16).ToString() + "%";
                                     }
                                     catch { }
+                                    // 电池电压
+                                    try
+                                    {
+                                        resBatVol.Text = Convert.ToInt32(frameContent.Text.Substring(33, 2), 16) + "%";
+                                    }
+                                    catch { }
+                                    // 休眠时间
+                                    try
+                                    {
+                                        resSleepTime.Text = Convert.ToInt32(frameContent.Text.Substring(36, 5).Replace(" ", ""), 16) + "秒";
+                                    }
+                                    catch { }
+                                    // 仪表状态
+                                    try
+                                    {
+                                        string frameStatue = frameContent.Text.Substring(42, 5).Replace(" ", "");
+                                        string binFrameStatue = Convert.ToString(Convert.ToInt32(frameStatue, 16), 2).PadLeft(8, '0');
+                                        if (Convert.ToInt32(binFrameStatue.Replace(" ", ""), 2) != 0)
+                                        {
+                                            resStatue.Text = "故障";
+                                            string failureMessage = "";
+                                            int count = 0;
+                                            // 1 Bit0 仪表故障
+                                            // 2 Bit1 参数错误
+                                            // 3 Bit2 电池欠压，日月协议中仍然保留
+                                            // 4 Bit3 AI1 上限报警
+                                            // 5 Bit4 AI1 下限报警
+                                            // 6 Bit5 AI2 上限报警
+                                            // 7 Bit6 AI2 下限报警
+                                            // 8 Bit7 预留
+                                            for (int a = 7; a >= 0; a--)
+                                            {
+                                                if (binFrameStatue.Substring(7 - a, 1) == "1")
+                                                {
+                                                    switch (7 - a)
+                                                    {
+                                                        case 0: failureMessage += ++count + " 仪表故障\n"; break;
+                                                        case 1: failureMessage += ++count + " 参数故障\n"; break;
+                                                        case 2: failureMessage += ++count + " 电池欠压\n"; break;
+                                                        case 3: failureMessage += ++count + " 压力上限报警\n"; break;
+                                                        case 4: failureMessage += ++count + " 压力下限报警\n"; break;
+                                                        case 5: failureMessage += ++count + " 温度上限报警\n"; break;
+                                                        case 6: failureMessage += ++count + " 温度下限报警\n"; break;
+                                                        case 7: failureMessage += ""; break;
+                                                        default: failureMessage += "参数错误\n"; break;
+                                                    }
+                                                }
+                                            }
+                                            string messageBoxText = "设备上报" + count + "个故障: \n" + failureMessage;
+                                            string caption = "设备故障";
+                                            MessageBoxButton button = MessageBoxButton.OK;
+                                            MessageBoxImage icon = MessageBoxImage.Error;
+                                            MessageBox.Show(messageBoxText, caption, button, icon);
+                                        }
+                                        else
+                                        {
+                                            resStatue.Text = "正常";
+                                        }
+                                    }
+                                    catch { }
+                                    // 实时数据
+                                    try
+                                    {
+                                        resData.Text = frameContent.Text.Substring(48, 11);
+                                    }
+                                    catch { }
+
+
 
                                 }
                                 break;
@@ -498,17 +533,17 @@ namespace WpfApp1_TestSoftware_CSMC
                                 resAddress.Foreground = new SolidColorBrush(Colors.Red);
                                 break;
                         }
-                    }
-                    else
-                    {
-                        // 清空解析面板
-                        resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
-                        resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
-                        resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
-                        resStatue.Clear(); resData.Clear(); resCRC.Clear();
-                        resCRC.Text = "未通过";
-                        resCRC.Foreground = new SolidColorBrush(Colors.Red);
-                    }
+                    //}
+                    //    else
+                    //    {
+                    //        // 清空解析面板
+                    //        resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
+                    //        resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
+                    //        resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
+                    //        resStatue.Clear(); resData.Clear(); resCRC.Clear();
+                    //        resCRC.Text = "未通过";
+                    //        resCRC.Foreground = new SolidColorBrush(Colors.Red);
+                    //    }
                 }
                 catch
                 {
@@ -789,7 +824,6 @@ namespace WpfApp1_TestSoftware_CSMC
             }
             return Bytes;
         }
-
 
 
 

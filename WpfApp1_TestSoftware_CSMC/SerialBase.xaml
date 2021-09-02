@@ -280,11 +280,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="0" Grid.Row="3" Margin="5,0" Orientation="Horizontal">
                     <Label Content="仪表状态" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resStatue" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center">
-                        <TextBox.ToolTip>
-                            <ToolTip Placement="Top" Content="将要发送的数据，Ctrl+Enter发送"/>
-                        </TextBox.ToolTip>
-                    </TextBox>
+                    <TextBox x:Name="resStatue" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Grid.Row="3" Margin="5,0" Orientation="Horizontal">
                     <Label Content="实时数据" VerticalAlignment="Center" Width="80"/>
