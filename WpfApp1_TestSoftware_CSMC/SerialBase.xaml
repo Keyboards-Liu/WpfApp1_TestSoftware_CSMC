@@ -14,7 +14,6 @@
              mc:Ignorable="d" 
              
              MinHeight="540" MinWidth="780" 
-             MaxHeight="540" MaxWidth="780" 
              Background="White">
 
     <!--自定义命令-->
@@ -38,16 +37,16 @@
     <!--定义窗格网络-->
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="100*"/>
+            <RowDefinition Height="82"/>
+            <RowDefinition Height="95"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition Height="100*"/>
+            <RowDefinition Height="40*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/>
-            <ColumnDefinition Width="540"/>
+            <ColumnDefinition Width="540*"/>
         </Grid.ColumnDefinitions>
         <!--串口配置面板-->
         <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5" Header="配置面板" Grid.RowSpan="2" >
@@ -308,17 +307,18 @@
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
+                            <ColumnDefinition Width="150*"/>
+                            <ColumnDefinition Width="100*"/>
+                            <ColumnDefinition Width="50*"/>
+                            <ColumnDefinition Width="100*"/>
+                            <ColumnDefinition Width="50*"/>
+                            <ColumnDefinition Width="100*"/>
+                            <ColumnDefinition Width="200*"/>
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <StatusBarItem Grid.Column="0" VerticalAlignment="Stretch" Margin="5,0,-50,0">
+            <StatusBarItem Grid.Column="0" VerticalAlignment="Stretch" Margin="5,0,5,0">
                 <!--提示栏-->
                 <TextBlock x:Name="statusTextBlock" Foreground="Red"/>
             </StatusBarItem>
@@ -336,9 +336,13 @@
             <StatusBarItem Grid.Column="4" VerticalAlignment="Center" >
                 <TextBlock Name="statusSendByteTextBlock" Foreground="Blue" Text="0"/>
             </StatusBarItem>
-            <StatusBarItem Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,0">
+            <StatusBarItem Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5,0">
                 <!--计数清零-->
-                <Button Width="110" Name="countClearButton" Click="CountClearButton_Click" Content="计数清零"/>
+                <Button Width="80" Name="countClearButton" Click="CountClearButton_Click" Content="计数清零"/>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="6" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,0">
+                <!--计数清零-->
+                <TextBlock Name="operationTime" Foreground="Blue" Text="0"/>
             </StatusBarItem>
         </StatusBar>
 
