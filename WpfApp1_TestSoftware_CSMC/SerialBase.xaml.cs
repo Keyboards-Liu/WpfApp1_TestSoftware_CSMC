@@ -247,7 +247,11 @@ namespace WpfApp1_TestSoftware_CSMC
                     // 校验码
                     frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
                 }
-                catch { }
+                catch
+                {
+                    // 异常时显示提示文字
+                    statusTextBlock.Text = "文本解析出错！";
+                }
                 // 仪表参数解析面板写入
                 try
                 {
@@ -279,7 +283,11 @@ namespace WpfApp1_TestSoftware_CSMC
                                                     resProtocol.Foreground = new SolidColorBrush(Colors.Red); break;
                                             }
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "通信协议解析出错！";
+                                        }
                                         // 网络地址
                                         try
                                         {
@@ -287,7 +295,11 @@ namespace WpfApp1_TestSoftware_CSMC
                                             int intFrameContentAddress = Convert.ToInt32(frameContentAddress, 16);
                                             resAddress.Text = intFrameContentAddress.ToString();
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "网络地址解析出错！";
+                                        }
                                         // 厂商号
                                         try
                                         {
@@ -310,7 +322,11 @@ namespace WpfApp1_TestSoftware_CSMC
                                                 resVendor.Foreground = new SolidColorBrush(Colors.Red);
                                             }
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "厂商号解析出错！";
+                                        }
                                         // 仪表类型
                                         try
                                         {
@@ -369,13 +385,21 @@ namespace WpfApp1_TestSoftware_CSMC
                                                 }
                                             }
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "仪表类型解析出错！";
+                                        }
                                         // 仪表组号
                                         try
                                         {
                                             resGroup.Text = Convert.ToInt32(frameContent.Text.Substring(18, 2).Replace(" ", ""), 16) + "组" + Convert.ToInt32(frameContent.Text.Substring(21, 2).Replace(" ", ""), 16) + "号";
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "仪表组号解析出错！";
+                                        }
                                         // 数据类型
                                         try
                                         {
@@ -445,7 +469,11 @@ namespace WpfApp1_TestSoftware_CSMC
                                                 }
                                             }
                                         }
-                                        catch { }
+                                        catch
+                                        {
+                                            // 异常时显示提示文字
+                                            statusTextBlock.Text = "数据类型解析出错！";
+                                        }
                                     }
 
                                     // 无线仪表数据段
@@ -455,19 +483,31 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         resSucRate.Text = Convert.ToInt32(frameContent.Text.Substring(30, 2), 16).ToString() + "%";
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                        // 异常时显示提示文字
+                                        statusTextBlock.Text = "通信效率解析出错！";
+                                    }
                                     // 电池电压
                                     try
                                     {
                                         resBatVol.Text = Convert.ToInt32(frameContent.Text.Substring(33, 2), 16) + "%";
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                        // 异常时显示提示文字
+                                        statusTextBlock.Text = "电池电压解析出错！";
+                                    }
                                     // 休眠时间
                                     try
                                     {
                                         resSleepTime.Text = Convert.ToInt32(frameContent.Text.Substring(36, 5).Replace(" ", ""), 16) + "秒";
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                        // 异常时显示提示文字
+                                        statusTextBlock.Text = "休眠时间解析出错！";
+                                    }
                                     // 仪表状态
                                     try
                                     {
@@ -516,7 +556,11 @@ namespace WpfApp1_TestSoftware_CSMC
                                             resStatue.Text = "正常";
                                         }
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                        // 异常时显示提示文字
+                                        statusTextBlock.Text = "仪表状态解析出错！";
+                                    }
                                     // 实时数据
                                     try
                                     {
@@ -529,7 +573,11 @@ namespace WpfApp1_TestSoftware_CSMC
 
                                         resData.Text = frameContent.Text.Substring(48, 11);
                                     }
-                                    catch { }
+                                    catch
+                                    {
+                                        // 异常时显示提示文字
+                                        statusTextBlock.Text = "实时数据解析出错！";
+                                    }
 
 
 
@@ -554,7 +602,8 @@ namespace WpfApp1_TestSoftware_CSMC
                 }
                 catch
                 {
-
+                        // 异常时显示提示文字
+                        statusTextBlock.Text = "参数解析出错！";
                 }
 
             }

@@ -203,7 +203,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
                     <Label Content="帧头" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameHeader" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                    <TextBox x:Name="frameHeader" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
                     <Label Content="长度域" VerticalAlignment="Center" Width="80"/>
