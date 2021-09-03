@@ -24,10 +24,14 @@ namespace WpfApp1_TestSoftware_CSMC
         private string receiveData;
         private DispatcherTimer autoSendTimer = new DispatcherTimer();
         private DispatcherTimer autoDetectionTimer = new DispatcherTimer();
+        private DispatcherTimer GetCurrentTimer = new DispatcherTimer();
         private Encoding setEncoding = Encoding.Default;
 
         public static uint receiveBytesCount = 0;
         public static uint sendBytesCount = 0;
+        public static uint receiveCount = 0;
+        public static uint sendCount = 0;
+
 
         public string DateStr { get; set; }
         public string TimeStr { get; set; }
@@ -48,9 +52,13 @@ namespace WpfApp1_TestSoftware_CSMC
             autoDetectionTimer.Interval = new TimeSpan(0, 0, 0, 1, 0);
             autoDetectionTimer.Start();
             // 开启当前时间定时器，并设置自动检测100毫秒1次
-            autoDetectionTimer.Tick += new EventHandler(GetCurrentTime);
-            autoDetectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            autoDetectionTimer.Start();
+            GetCurrentTimer.Tick += new EventHandler(GetCurrentTime);
+            GetCurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            GetCurrentTimer.Start();
+            // 设置自动发送定时器，并设置自动检测100毫秒1次
+            autoSendTimer.Tick += new EventHandler(AutoSendTimer_Tick);
+            // 设置定时时间，开启定时器
+            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
             // 设置状态栏提示
             statusTextBlock.Text = "准备就绪";
         }
@@ -201,11 +209,11 @@ namespace WpfApp1_TestSoftware_CSMC
         #endregion
 
         #region 串口数据接收处理/窗口显示清空功能
-        /// <summary>
-        /// 定义全局委托, 用于接收并显示数据
-        /// </summary>
-        /// <param name="text">输入将要显示的字符串</param>
-        private delegate void UpdateUiTextDelegate(string text);
+        ///// <summary>
+        ///// 定义全局委托, 用于接收并显示数据
+        ///// </summary>
+        ///// <param name="text">输入将要显示的字符串</param>
+        //private delegate void UpdateUiTextDelegate(string text);
         /// <summary>
         /// 接收串口数据, 并转换为16进制字符串
         /// </summary>
@@ -214,40 +222,43 @@ namespace WpfApp1_TestSoftware_CSMC
         public void ReceiveData(object sender, SerialDataReceivedEventArgs e)
         {
             Thread.Sleep(70);
+            receiveCount++;
+            //Console.WriteLine("接收" + receiveCount + "次");
             // 读取缓冲区内所有字节
             byte[] receiveBuffer = new byte[serialPort.BytesToRead];
             serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
             // 字符串转换为十六进制字符串
             receiveData = string.Empty;
-            Console.WriteLine();
+
             for (int i = 0; i < receiveBuffer.Length; i++)
             {
                 receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
             }
             receiveData = receiveData.Trim();
+            //Console.WriteLine(receiveData);
             // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
             //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
             if (((receiveData.Length + 1) / 3) == 27)
             {
-                statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(
-                   delegate
+                statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(delegate
                    {
                        ShowData(receiveData);
                        ShowParseText(receiveData);
                        ShowParseParameter(receiveData);
-                   })
-                    );
+                   }));
             }
-            else if (((receiveData.Length + 1) / 3) != 27 && receiveData.Replace(" ","") != "")
+            else if (((receiveData.Length + 1) / 3) != 27 && receiveData.Replace(" ", "") != "")
             {
-                statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(
-                   delegate
+                statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(delegate
                    {
                        ShowData(receiveData);
-                   })
-                    );
+                   }));
             }
         }
+        /// <summary>
+        /// 接收窗口显示功能
+        /// </summary>
+        /// <param name="receiveText">需要窗口显示的字符串</param>
         private void ShowData(string receiveText)
         {
             // 更新接收字节数           
@@ -266,7 +277,30 @@ namespace WpfApp1_TestSoftware_CSMC
             }
 
         }
-
+        private void ShowParseText(string receiveText)
+        {
+            // 接收文本解析面板写入
+            try
+            {
+                // 帧头
+                frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
+                // 长度域
+                frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
+                // 命令域
+                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
+                // 数据地址域
+                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
+                // 数据内容域
+                frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, ((Convert.ToInt32(frameLength.Text, 16) - 2) * 3) - 1);
+                // 校验码
+                frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
+            }
+            catch
+            {
+                // 异常时显示提示文字
+                statusTextBlock.Text = "文本解析出错！";
+            }
+        }
         private void ShowParseParameter(string receiveText)
         {
             // 仪表参数解析面板写入
@@ -304,6 +338,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "通信协议解析出错！";
+                                        serialPort.Close();
                                     }
                                     // 网络地址
                                     try
@@ -316,6 +351,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "网络地址解析出错！";
+                                        serialPort.Close();
                                     }
                                     // 厂商号
                                     try
@@ -343,6 +379,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "厂商号解析出错！";
+                                        serialPort.Close();
                                     }
                                     // 仪表类型
                                     try
@@ -406,6 +443,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表类型解析出错！";
+                                        serialPort.Close();
                                     }
                                     // 仪表组号
                                     try
@@ -416,6 +454,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表组号解析出错！";
+                                        serialPort.Close();
                                     }
                                     // 数据类型
                                     try
@@ -490,6 +529,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "数据类型解析出错！";
+                                        serialPort.Close();
                                     }
                                 }
 
@@ -504,6 +544,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "通信效率解析出错！";
+                                    serialPort.Close();
                                 }
                                 // 电池电压
                                 try
@@ -514,6 +555,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "电池电压解析出错！";
+                                    serialPort.Close();
                                 }
                                 // 休眠时间
                                 try
@@ -524,6 +566,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "休眠时间解析出错！";
+                                    serialPort.Close();
                                 }
                                 // 仪表状态
                                 try
@@ -577,23 +620,41 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "仪表状态解析出错！";
+                                    serialPort.Close();
                                 }
                                 // 实时数据
                                 try
                                 {
-                                    // 浮点数
-                                    //string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
-                                    //string binFrameData = Convert.ToString(Convert.ToInt32(frameresData, 16), 2).PadLeft(32, '0');
-                                    //int flFrameData_Sign = (1 - Convert.ToInt32(binFrameData.Substring(0, 1), 2) * 2);
-                                    //int flFrameData_Exp = Convert.ToInt32(binFrameData.Substring(1, 8), 2) - 127;
-                                    //float flFrameData_Mant = ;
-
-                                    resData.Text = frameContent.Text.Substring(48, 11);
+                                    // 十六进制字符串转换为浮点数
+                                    string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
+                                    string binFrameData = Convert.ToString(Convert.ToInt32(frameresData, 16), 2).PadLeft(32, '0');
+                                    int binFrameData_Sign = (1 - Convert.ToInt32(binFrameData.Substring(0, 1), 2) * 2);
+                                    int binFrameData_Exp = Convert.ToInt32(binFrameData.Substring(1, 8), 2) - 127;
+                                    string binFrameData_Mant = "1" + binFrameData.Substring(9, 23);
+                                    if (binFrameData_Exp >= 0)
+                                    {
+                                        binFrameData_Mant = binFrameData_Mant.Insert(binFrameData_Exp + 1, ".");
+                                    }
+                                    else binFrameData_Mant = binFrameData_Mant.PadLeft(binFrameData_Mant.Length - binFrameData_Sign, '0').Insert(1, ".");
+                                    string[] binFrameDataStr = binFrameData_Mant.Split('.');
+                                    double flFrameData = 0.0;
+                                    for (int i = 0; i < binFrameDataStr[0].Length; i++)
+                                    {
+                                        double EXP = Math.Pow(2, binFrameDataStr[0].Length - i - 1);
+                                        flFrameData += Convert.ToInt32(binFrameDataStr[0].Substring(i, 1)) * EXP;
+                                    }
+                                    for (int i = 0; i < binFrameDataStr[1].Length; i++)
+                                    {
+                                        double EXP = Math.Pow(2, -i - 1);
+                                        flFrameData += Convert.ToInt32(binFrameDataStr[1].Substring(i, 1)) * EXP;
+                                    }
+                                    resData.Text = flFrameData.ToString();
                                 }
                                 catch
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "实时数据解析出错！";
+                                    serialPort.Close();
                                 }
 
 
@@ -621,37 +682,11 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 // 异常时显示提示文字
                 statusTextBlock.Text = "参数解析出错！";
+                serialPort.Close();
             }
         }
 
-        private void ShowParseText(string receiveText)
-        {
-            // 接收文本解析面板写入
-            try
-            {
-                // 帧头
-                frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
-                // 长度域
-                frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
-                // 命令域
-                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
-                // 数据地址域
-                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
-                // 数据内容域
-                frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, ((Convert.ToInt32(frameLength.Text, 16) - 2) * 3) - 1);
-                // 校验码
-                frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
-            }
-            catch
-            {
-                // 异常时显示提示文字
-                statusTextBlock.Text = "文本解析出错！";
-            }
-        }
-        /// <summary>
-        /// 接收窗口显示功能
-        /// </summary>
-        /// <param name="receiveText">需要窗口显示的字符串</param>
+
 
 
 
@@ -693,6 +728,10 @@ namespace WpfApp1_TestSoftware_CSMC
         /// </summary>
         private void SerialPortSend()
         {
+            sendCount++;
+            //Console.WriteLine("发送" + sendCount + "次");
+            // 清空发送缓冲区
+            serialPort.DiscardOutBuffer();
             if (!serialPort.IsOpen)
             {
                 statusTextBlock.Text = "请先打开串口！";
@@ -702,12 +741,12 @@ namespace WpfApp1_TestSoftware_CSMC
             sendTextBox.Text.Replace("0x", "");
             sendTextBox.Text.Replace("0X", "");
             string sendData = sendTextBox.Text;
+
             // 十六进制数据发送
             try
             {
-
                 // 分割字符串
-                string[] strArray = sendData.Split(new char[] { ' ' });
+                string[] strArray = sendData.Split(new char[] {' '});
                 // 写入数据缓冲区
                 byte[] sendBuffer = new byte[strArray.Length];
                 int i = 0;
@@ -721,9 +760,16 @@ namespace WpfApp1_TestSoftware_CSMC
                     }
                     catch
                     {
+                        serialPort.DiscardOutBuffer();
                         MessageBox.Show("字节越界，请逐个字节输入！", "Error");
                     }
                 }
+                //foreach(byte b in sendBuffer)
+                //{
+                //Console.Write(b.ToString("X2"));
+                //}
+                //Console.WriteLine("");
+
                 serialPort.Write(sendBuffer, 0, sendBuffer.Length);
                 // 更新发送数据计数
                 sendBytesCount += (uint)sendBuffer.Length;
@@ -731,9 +777,8 @@ namespace WpfApp1_TestSoftware_CSMC
             }
             catch
             {
-                autoSendCheckBox.IsChecked = false;// 关闭自动发送
                 statusTextBlock.Text = "当前为16进制发送模式，请输入16进制数据";
-                return;
+                autoSendCheckBox.IsChecked = false;// 关闭自动发送
             }
         }
         /// <summary>
@@ -752,10 +797,6 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e"></param>
         private void AutoSendCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            // 创建定时器
-            autoSendTimer.Tick += new EventHandler(AutoSendTimer_Tick);
-            // 设置定时时间，开启定时器
-            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
             autoSendTimer.Start();
         }
         /// <summary>
@@ -765,10 +806,11 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e"></param>
         private void AutoSendTimer_Tick(object sender, EventArgs e)
         {
+                        autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
             // 发送数据
             SerialPortSend();
             // 设置新的定时时间           
-            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
+            // autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
         }
         /// <summary>
         /// 自动发送关闭
