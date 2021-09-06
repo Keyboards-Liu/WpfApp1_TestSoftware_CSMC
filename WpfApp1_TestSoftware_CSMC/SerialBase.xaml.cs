@@ -62,11 +62,15 @@ namespace WpfApp1_TestSoftware_CSMC
             // 设置状态栏提示
             statusTextBlock.Text = "准备就绪";
         }
-
+        /// <summary>
+        /// 显示当前时间
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void GetCurrentTime(object sender, EventArgs e)
         {
             DateStr = DateTime.Now.ToString("yyyy-MM-dd");
-            TimeStr = DateTime.Now.ToString("HH:mm:ss");// 除直接送至文本，也可以写进日志等
+            TimeStr = DateTime.Now.ToString("HH:mm:ss");
             operationTime.Text = DateStr + " " + TimeStr;
         }
         /// <summary>
@@ -209,11 +213,6 @@ namespace WpfApp1_TestSoftware_CSMC
         #endregion
 
         #region 串口数据接收处理/窗口显示清空功能
-        ///// <summary>
-        ///// 定义全局委托, 用于接收并显示数据
-        ///// </summary>
-        ///// <param name="text">输入将要显示的字符串</param>
-        //private delegate void UpdateUiTextDelegate(string text);
         /// <summary>
         /// 接收串口数据, 并转换为16进制字符串
         /// </summary>
@@ -223,21 +222,19 @@ namespace WpfApp1_TestSoftware_CSMC
         {
             Thread.Sleep(70);
             receiveCount++;
-            //Console.WriteLine("接收" + receiveCount + "次");
+            // Console.WriteLine("接收" + receiveCount + "次");
             // 读取缓冲区内所有字节
             byte[] receiveBuffer = new byte[serialPort.BytesToRead];
             serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
             // 字符串转换为十六进制字符串
             receiveData = string.Empty;
-
             for (int i = 0; i < receiveBuffer.Length; i++)
             {
                 receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
             }
             receiveData = receiveData.Trim();
-            //Console.WriteLine(receiveData);
-            // 多线程安全更新页面显示 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
-            //Dispatcher.BeginInvoke(DispatcherPriority.Send, new UpdateUiTextDelegate(ShowData), receiveData);
+            // Console.WriteLine(receiveData);
+            // 传参 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
             if (((receiveData.Length + 1) / 3) == 27)
             {
                 statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(delegate
@@ -279,20 +276,31 @@ namespace WpfApp1_TestSoftware_CSMC
         }
         private void ShowParseText(string receiveText)
         {
+            // 清空解析面板
+            frameHeader.Clear(); frameLength.Clear(); frameCommand.Clear();
+            frameAddress.Clear(); frameContent.Clear(); frameCRC.Clear();
+            // 将前景色改为黑色
+            frameHeader.Foreground = new SolidColorBrush(Colors.Black);
+            frameLength.Foreground = new SolidColorBrush(Colors.Black);
+            frameCommand.Foreground = new SolidColorBrush(Colors.Black);
+            frameAddress.Foreground = new SolidColorBrush(Colors.Black);
+            frameContent.Foreground = new SolidColorBrush(Colors.Black);
+            frameCRC.Foreground = new SolidColorBrush(Colors.Black);            
             // 接收文本解析面板写入
             try
             {
-                // 帧头
-                frameHeader.Text = receiveText.Substring(0 * 3, 1 * 3 - 1);
-                // 长度域
-                frameLength.Text = receiveText.Substring((0 + 1) * 3, 1 * 3 - 1);
-                // 命令域
-                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, 2 * 3 - 1);
-                // 数据地址域
-                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, 2 * 3 - 1);
-                // 数据内容域
+                // 帧头 (1位)
+                frameHeader.Text = receiveText.Substring(0 * 3, (1 * 3) - 1);
+                // 长度域 (1位, 最长为FF = 255)
+                frameLength.Text = receiveText.Substring((0 + 1) * 3, (1 * 3) - 1);
+                // 命令域 (2位)
+                frameCommand.Text = receiveText.Substring((0 + 1 + 1) * 3, (2 * 3) - 1);
+                // 数据域 (长度域指示长度)
+                // 数据地址域 (2位)
+                frameAddress.Text = receiveText.Substring((0 + 1 + 1 + 2) * 3, (2 * 3) - 1);
+                // 数据内容域 (长度域指示长度 - 2)
                 frameContent.Text = receiveText.Substring((0 + 1 + 1 + 2 + 2) * 3, ((Convert.ToInt32(frameLength.Text, 16) - 2) * 3) - 1);
-                // 校验码
+                // 校验码 (1位)
                 frameCRC.Text = receiveText.Substring(receiveText.Length - 2, 2);
             }
             catch
@@ -306,6 +314,24 @@ namespace WpfApp1_TestSoftware_CSMC
             // 仪表参数解析面板写入
             try
             {
+                // 清空解析面板
+                resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
+                resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
+                resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
+                resStatue.Clear(); resData.Clear(); resCRC.Clear();
+                // 将前景色改为黑色
+                resProtocol.Foreground = new SolidColorBrush(Colors.Black);
+                resAddress.Foreground = new SolidColorBrush(Colors.Black);
+                resVendor.Foreground = new SolidColorBrush(Colors.Black);
+                resType.Foreground = new SolidColorBrush(Colors.Black);
+                resGroup.Foreground = new SolidColorBrush(Colors.Black);
+                resFunctionData.Foreground = new SolidColorBrush(Colors.Black);
+                resSucRate.Foreground = new SolidColorBrush(Colors.Black);
+                resBatVol.Foreground = new SolidColorBrush(Colors.Black);
+                resSleepTime.Foreground = new SolidColorBrush(Colors.Black);
+                resStatue.Foreground = new SolidColorBrush(Colors.Black);
+                resData.Foreground = new SolidColorBrush(Colors.Black);
+                resCRC.Foreground = new SolidColorBrush(Colors.Black);
                 // 字符串校验
                 string j = "";
                 string[] hexvalue = receiveText.Trim().Split(' ');
@@ -328,10 +354,13 @@ namespace WpfApp1_TestSoftware_CSMC
                                         int intFrameProtocol = Convert.ToInt32(frameProtocol, 16);
                                         switch (intFrameProtocol)
                                         {
-                                            case 0x0001: resProtocol.Text = "ZigBee SZ9-GRM V3.01油田专用通讯协议"; break;
+                                            case 0x0001:
+                                                resProtocol.Text = "ZigBee SZ9-GRM V3.01油田专用通讯协议";
+                                                break;
                                             default:
                                                 resProtocol.Text = "未知";
-                                                resProtocol.Foreground = new SolidColorBrush(Colors.Red); break;
+                                                resProtocol.Foreground = new SolidColorBrush(Colors.Red);
+                                                break;
                                         }
                                     }
                                     catch
@@ -339,6 +368,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "通信协议解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                     // 网络地址
                                     try
@@ -352,6 +382,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "网络地址解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                     // 厂商号
                                     try
@@ -372,7 +403,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         else
                                         {
                                             resVendor.Text = "未定义";
-                                            resVendor.Foreground = new SolidColorBrush(Colors.Red);
+                                            resVendor.Foreground = new SolidColorBrush(Colors.Red);                       
                                         }
                                     }
                                     catch
@@ -380,6 +411,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "厂商号解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                     // 仪表类型
                                     try
@@ -435,7 +467,6 @@ namespace WpfApp1_TestSoftware_CSMC
                                             {
                                                 resType.Text = "未定义";
                                                 resType.Foreground = new SolidColorBrush(Colors.Red);
-
                                             }
                                         }
                                     }
@@ -444,6 +475,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表类型解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                     // 仪表组号
                                     try
@@ -455,6 +487,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表组号解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                     // 数据类型
                                     try
@@ -530,6 +563,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "数据类型解析出错！";
                                         serialPort.Close();
+                                        return;
                                     }
                                 }
 
@@ -545,6 +579,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "通信效率解析出错！";
                                     serialPort.Close();
+                                    return;
                                 }
                                 // 电池电压
                                 try
@@ -556,6 +591,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "电池电压解析出错！";
                                     serialPort.Close();
+                                    return;
                                 }
                                 // 休眠时间
                                 try
@@ -567,6 +603,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "休眠时间解析出错！";
                                     serialPort.Close();
+                                    return;
                                 }
                                 // 仪表状态
                                 try
@@ -669,11 +706,6 @@ namespace WpfApp1_TestSoftware_CSMC
                 }
                 else
                 {
-                    // 清空解析面板
-                    resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
-                    resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
-                    resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
-                    resStatue.Clear(); resData.Clear(); resCRC.Clear();
                     resCRC.Text = "未通过";
                     resCRC.Foreground = new SolidColorBrush(Colors.Red);
                 }
