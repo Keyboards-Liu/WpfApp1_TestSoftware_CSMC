@@ -19,22 +19,35 @@ namespace WpfApp1_TestSoftware_CSMC
     /// </summary>
     public partial class SerialBase : UserControl
     {
-        #region 内部变量定义
+        #region 基本定义
+        // 串行端口
         private SerialPort serialPort = new SerialPort();
-        private string receiveData;
+        // 自动发送定时器
         private DispatcherTimer autoSendTimer = new DispatcherTimer();
+        // 自动检测定时器
         private DispatcherTimer autoDetectionTimer = new DispatcherTimer();
+        // 自动获取当前时间定时器
         private DispatcherTimer GetCurrentTimer = new DispatcherTimer();
+        // 字符编码设定
         private Encoding setEncoding = Encoding.Default;
-
+        // 变量定义
+        private string receiveData;
         public static uint receiveBytesCount = 0;
         public static uint sendBytesCount = 0;
         public static uint receiveCount = 0;
         public static uint sendCount = 0;
-
-
+        // 字段封装
         public string DateStr { get; set; }
-        public string TimeStr { get; set; }
+        public string TimeStr { get; set; }        
+        /// <summary>
+        /// 关闭窗口
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>        
+        private void WindowClosed(object sender, ExecutedRoutedEventArgs e)
+        {
+        }
+
         #endregion
 
         #region 串口初始化/串口变更检测
@@ -99,43 +112,49 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e">事件数据的对象</param>
         private void AutoDetectionTimer_Tick(object sender, EventArgs e)
         {
-            // 检测有效串口，去掉重复串口
-            string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
-            if (turnOnButton.IsChecked == true)
+            try
             {
-                // 在有效串口号中遍历当前打开的串口号
-                foreach (string name in serialPortName)
+                // 检测有效串口，去掉重复串口
+                string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
+                if (turnOnButton.IsChecked == true)
                 {
-                    // 如果找到串口，说明串口仍然有效，跳出循环
-                    if (serialPort.PortName == name)
-                        return;
-                }
-                // 如果找不到, 说明串口失效了，关闭串口并移除串口名
-                turnOnButton.IsChecked = false;
-                portNameComboBox.Items.Remove(serialPort.PortName);
-                portNameComboBox.SelectedIndex = 0;
-                // 输出提示信息
-                statusTextBlock.Text = "串口已失效";
-            }
-            else
-            {
-                // 检查有效串口和ComboBox中的串口号个数是否不同
-                if (portNameComboBox.Items.Count != serialPortName.Length)
-                {
-                    // 串口数不同，清空ComboBox
-                    portNameComboBox.Items.Clear();
-                    // 重新添加有效串口
+                    // 在有效串口号中遍历当前打开的串口号
                     foreach (string name in serialPortName)
                     {
-                        portNameComboBox.Items.Add(name);
+                        // 如果找到串口，说明串口仍然有效，跳出循环
+                        if (serialPort.PortName == name)
+                            return;
                     }
-                    portNameComboBox.SelectedIndex = -1;
+                    // 如果找不到, 说明串口失效了，关闭串口并移除串口名
+                    turnOnButton.IsChecked = false;
+                    portNameComboBox.Items.Remove(serialPort.PortName);
+                    portNameComboBox.SelectedIndex = 0;
                     // 输出提示信息
-
-                    statusTextBlock.Text = "串口列表已更新！";
+                    statusTextBlock.Text = "串口已失效";
+                }
+                else
+                {
+                    // 检查有效串口和ComboBox中的串口号个数是否不同
+                    if (portNameComboBox.Items.Count != serialPortName.Length)
+                    {
+                        // 串口数不同，清空ComboBox
+                        portNameComboBox.Items.Clear();
+                        // 重新添加有效串口
+                        foreach (string name in serialPortName)
+                        {
+                            portNameComboBox.Items.Add(name);
+                        }
+                        portNameComboBox.SelectedIndex = -1;
+                        // 输出提示信息
+                        statusTextBlock.Text = "串口列表已更新！";
+                    }
                 }
             }
-
+            catch
+            {
+                turnOnButton.IsChecked = false;
+                statusTextBlock.Text = "串口检测错误！";
+            }
         }
         #endregion
 
@@ -214,7 +233,7 @@ namespace WpfApp1_TestSoftware_CSMC
 
         #region 串口数据接收处理/窗口显示清空功能
         /// <summary>
-        /// 接收串口数据, 并转换为16进制字符串
+        /// 接收串口数据, 转换为16进制字符串, 传递到显示功能
         /// </summary>
         /// <param name="sender">事件源的对象</param>
         /// <param name="e">事件数据的对象</param>
@@ -227,29 +246,24 @@ namespace WpfApp1_TestSoftware_CSMC
             byte[] receiveBuffer = new byte[serialPort.BytesToRead];
             serialPort.Read(receiveBuffer, 0, receiveBuffer.Length);
             // 字符串转换为十六进制字符串
-            receiveData = string.Empty;
-            for (int i = 0; i < receiveBuffer.Length; i++)
-            {
-                receiveData += string.Format("{0:X2} ", receiveBuffer[i]);
-            }
-            receiveData = receiveData.Trim();
+            receiveData = BytestoHexStr(receiveBuffer);
             // Console.WriteLine(receiveData);
             // 传参 (Invoke方法暂停工作线程, BeginInvoke方法不暂停)
             if (((receiveData.Length + 1) / 3) == 27)
             {
                 statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(delegate
-                   {
-                       ShowData(receiveData);
-                       ShowParseText(receiveData);
-                       ShowParseParameter(receiveData);
-                   }));
+                {
+                    ShowData(receiveData);
+                    ShowParseText(receiveData);
+                    ShowParseParameter(receiveData);
+                }));
             }
             else if (((receiveData.Length + 1) / 3) != 27 && receiveData.Replace(" ", "") != "")
             {
                 statusReceiveByteTextBlock.Dispatcher.Invoke(new Action(delegate
-                   {
-                       ShowData(receiveData);
-                   }));
+                {
+                    ShowData(receiveData);
+                }));
             }
         }
         /// <summary>
@@ -274,18 +288,14 @@ namespace WpfApp1_TestSoftware_CSMC
             }
 
         }
+        /// <summary>
+        /// 接收文本解析面板显示功能
+        /// </summary>
+        /// <param name="receiveText"></param>
         private void ShowParseText(string receiveText)
         {
-            // 清空解析面板
-            frameHeader.Clear(); frameLength.Clear(); frameCommand.Clear();
-            frameAddress.Clear(); frameContent.Clear(); frameCRC.Clear();
-            // 将前景色改为黑色
-            frameHeader.Foreground = new SolidColorBrush(Colors.Black);
-            frameLength.Foreground = new SolidColorBrush(Colors.Black);
-            frameCommand.Foreground = new SolidColorBrush(Colors.Black);
-            frameAddress.Foreground = new SolidColorBrush(Colors.Black);
-            frameContent.Foreground = new SolidColorBrush(Colors.Black);
-            frameCRC.Foreground = new SolidColorBrush(Colors.Black);            
+            // 面板清空
+            ParseTextClear();
             // 接收文本解析面板写入
             try
             {
@@ -309,29 +319,17 @@ namespace WpfApp1_TestSoftware_CSMC
                 statusTextBlock.Text = "文本解析出错！";
             }
         }
+        /// <summary>
+        /// 仪表参数解析面板显示功能
+        /// </summary>
+        /// <param name="receiveText"></param>
         private void ShowParseParameter(string receiveText)
         {
+            // 面板清空
+            ParseParameterClear();
             // 仪表参数解析面板写入
             try
             {
-                // 清空解析面板
-                resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
-                resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
-                resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
-                resStatue.Clear(); resData.Clear(); resCRC.Clear();
-                // 将前景色改为黑色
-                resProtocol.Foreground = new SolidColorBrush(Colors.Black);
-                resAddress.Foreground = new SolidColorBrush(Colors.Black);
-                resVendor.Foreground = new SolidColorBrush(Colors.Black);
-                resType.Foreground = new SolidColorBrush(Colors.Black);
-                resGroup.Foreground = new SolidColorBrush(Colors.Black);
-                resFunctionData.Foreground = new SolidColorBrush(Colors.Black);
-                resSucRate.Foreground = new SolidColorBrush(Colors.Black);
-                resBatVol.Foreground = new SolidColorBrush(Colors.Black);
-                resSleepTime.Foreground = new SolidColorBrush(Colors.Black);
-                resStatue.Foreground = new SolidColorBrush(Colors.Black);
-                resData.Foreground = new SolidColorBrush(Colors.Black);
-                resCRC.Foreground = new SolidColorBrush(Colors.Black);
                 // 字符串校验
                 string j = "";
                 string[] hexvalue = receiveText.Trim().Split(' ');
@@ -344,7 +342,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     {
                         case "FE":
                             {
-                                // 无线仪表帧头
+                                // 无线仪表数据域帧头
                                 {
                                     // 通信协议
                                     try
@@ -367,7 +365,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "通信协议解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                     // 网络地址
@@ -381,7 +379,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "网络地址解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                     // 厂商号
@@ -410,7 +408,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "厂商号解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                     // 仪表类型
@@ -474,7 +472,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表类型解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                     // 仪表组号
@@ -486,7 +484,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "仪表组号解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                     // 数据类型
@@ -555,20 +553,20 @@ namespace WpfApp1_TestSoftware_CSMC
                                             {
                                                 resFunctionData.Text = "未定义";
                                                 resFunctionData.Foreground = new SolidColorBrush(Colors.Red);
+                                                break;
                                             }
+                                            
                                         }
                                     }
                                     catch
                                     {
                                         // 异常时显示提示文字
                                         statusTextBlock.Text = "数据类型解析出错！";
-                                        serialPort.Close();
+                                        turnOnButton.IsChecked = false;
                                         return;
                                     }
                                 }
-
                                 // 无线仪表数据段
-
                                 // 通信效率
                                 try
                                 {
@@ -578,7 +576,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "通信效率解析出错！";
-                                    serialPort.Close();
+                                    turnOnButton.IsChecked = false;
                                     return;
                                 }
                                 // 电池电压
@@ -590,7 +588,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "电池电压解析出错！";
-                                    serialPort.Close();
+                                    turnOnButton.IsChecked = false;
                                     return;
                                 }
                                 // 休眠时间
@@ -602,7 +600,7 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "休眠时间解析出错！";
-                                    serialPort.Close();
+                                    turnOnButton.IsChecked = false;
                                     return;
                                 }
                                 // 仪表状态
@@ -657,45 +655,24 @@ namespace WpfApp1_TestSoftware_CSMC
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "仪表状态解析出错！";
-                                    serialPort.Close();
+                                    turnOnButton.IsChecked = false;
+                                    return;
                                 }
                                 // 实时数据
                                 try
                                 {
-                                    // 十六进制字符串转换为浮点数
+                                    // 十六进制字符串转换为浮点数字符串
                                     string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
-                                    string binFrameData = Convert.ToString(Convert.ToInt32(frameresData, 16), 2).PadLeft(32, '0');
-                                    int binFrameData_Sign = (1 - Convert.ToInt32(binFrameData.Substring(0, 1), 2) * 2);
-                                    int binFrameData_Exp = Convert.ToInt32(binFrameData.Substring(1, 8), 2) - 127;
-                                    string binFrameData_Mant = "1" + binFrameData.Substring(9, 23);
-                                    if (binFrameData_Exp >= 0)
-                                    {
-                                        binFrameData_Mant = binFrameData_Mant.Insert(binFrameData_Exp + 1, ".");
-                                    }
-                                    else binFrameData_Mant = binFrameData_Mant.PadLeft(binFrameData_Mant.Length - binFrameData_Sign, '0').Insert(1, ".");
-                                    string[] binFrameDataStr = binFrameData_Mant.Split('.');
-                                    double flFrameData = 0.0;
-                                    for (int i = 0; i < binFrameDataStr[0].Length; i++)
-                                    {
-                                        double EXP = Math.Pow(2, binFrameDataStr[0].Length - i - 1);
-                                        flFrameData += Convert.ToInt32(binFrameDataStr[0].Substring(i, 1)) * EXP;
-                                    }
-                                    for (int i = 0; i < binFrameDataStr[1].Length; i++)
-                                    {
-                                        double EXP = Math.Pow(2, -i - 1);
-                                        flFrameData += Convert.ToInt32(binFrameDataStr[1].Substring(i, 1)) * EXP;
-                                    }
+                                    double flFrameData = HexStrToFloat(frameresData);
                                     resData.Text = flFrameData.ToString();
                                 }
                                 catch
                                 {
                                     // 异常时显示提示文字
                                     statusTextBlock.Text = "实时数据解析出错！";
-                                    serialPort.Close();
+                                    turnOnButton.IsChecked = false;
+                                    return;
                                 }
-
-
-
                             }
                             break;
                         default:
@@ -714,14 +691,9 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 // 异常时显示提示文字
                 statusTextBlock.Text = "参数解析出错！";
-                serialPort.Close();
+                turnOnButton.IsChecked = false;
             }
         }
-
-
-
-
-
         /// <summary>
         /// 接收窗口清空按钮
         /// </summary>
@@ -862,6 +834,20 @@ namespace WpfApp1_TestSoftware_CSMC
         {
             sendTextBox.Clear();
         }
+        /// <summary>
+        /// 清空计数器
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CountClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 接收、发送计数清零
+            receiveBytesCount = 0;
+            sendBytesCount = 0;
+            // 更新数据显示
+            statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
+            statusSendByteTextBlock.Text = sendBytesCount.ToString();
+        }
         #endregion
 
         #region 文件读取与保存 (文件I/O)
@@ -922,47 +908,41 @@ namespace WpfApp1_TestSoftware_CSMC
         }
         #endregion
 
-        private void WindowClosed(object sender, ExecutedRoutedEventArgs e)
+        #region 方法打包
+        /// <summary>
+        /// 二进制字符串转换为十六进制字符串并格式化
+        /// </summary>
+        /// <param name="bytes"></param>
+        private static string BytestoHexStr(byte[] bytes)
         {
+            string HexStr = "";
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                HexStr += string.Format("{0:X2} ", bytes[i]);
+            }
+            HexStr = HexStr.Trim();
+            return HexStr;
         }
-
-
-        private void CountClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            //接收、发送计数清零
-            receiveBytesCount = 0;
-            sendBytesCount = 0;
-
-            //更新数据显示
-            statusReceiveByteTextBlock.Text = receiveBytesCount.ToString();
-            statusSendByteTextBlock.Text = sendBytesCount.ToString();
-        }
-
-
+        /// <summary>
+        /// 两个十六进制字符串求异或
+        /// </summary>
+        /// <param name="HexStr1"></param>
+        /// <param name="HexStr2"></param>
+        /// <returns></returns>
         public static string HexStrXor(string HexStr1, string HexStr2)
         {
-            //两个十六进制字符串的长度和长度差的绝对值以及异或结果
+            // 两个十六进制字符串的长度和长度差的绝对值以及异或结果
             int iHexStr1Len = HexStr1.Length;
             int iHexStr2Len = HexStr2.Length;
             int iGap, iHexStrLenLow;
             string result = string.Empty;
-
-            //获取这两个十六进制字符串长度的差值
+            // 获取这两个十六进制字符串长度的差值
             iGap = iHexStr1Len - iHexStr2Len;
-
-            //获取这两个十六进制字符串长度最小的那一个
+            // 获取这两个十六进制字符串长度最小的那一个
             iHexStrLenLow = iHexStr1Len < iHexStr2Len ? iHexStr1Len : iHexStr2Len;
-
-            //将这两个字符串转换成字节数组
+            // 将这两个字符串转换成字节数组
             byte[] bHexStr1 = HexStrToBytes(HexStr1);
             byte[] bHexStr2 = HexStrToBytes(HexStr2);
-
-            /**
-             * 把这两个十六进制字符串输出到控制台
-             * Console.WriteLine("HexStr1=[{0}]", HexStr1);
-             * Console.WriteLine("HexStr2=[{0}]", HexStr2);
-             */
-
             int i = 0;
             //先把每个字节异或后得到一个0~15范围内的整数，再转换成十六进制字符
             for (; i < iHexStrLenLow; ++i)
@@ -973,7 +953,11 @@ namespace WpfApp1_TestSoftware_CSMC
             result += iGap >= 0 ? HexStr1.Substring(i, iGap) : HexStr2.Substring(i, -iGap);
             return result;
         }
-        //将16进制字符串转换成字节数组
+        /// <summary>
+        /// 将十六进制字符串转换为十六进制数组
+        /// </summary>
+        /// <param name="HexStr"></param>
+        /// <returns></returns>
         public static byte[] HexStrToBytes(string HexStr)
         {
             if (HexStr == null)
@@ -993,52 +977,83 @@ namespace WpfApp1_TestSoftware_CSMC
             catch (Exception e)
             {
                 throw new Exception(e.Message);
-                /**
-                 * 把错误信息输出到控制台
-                 * Console.WriteLine("Exception {0} thrown.", e.GetType().FullName);
-                 * Console.WriteLine("Message:{0}", e.Message);
-                 */
             }
             return Bytes;
         }
-
-
-
-        //private void StopShowingButton_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    stopShowingButton.Content = "恢复显示";
-        //}
-
-        //private void StopShowingButton_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    stopShowingButton.Content = "停止显示";
-        //}
-
-        //private void HexadecimalDisplayCheckBox_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalSendCheckBox.IsChecked = true;
-        //}
-
-        //private void HexadecimalSendCheckBox_Checked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalDisplayCheckBox.IsChecked = true;
-        //}
-
-        //private void HexadecimalSendCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalDisplayCheckBox.IsChecked = false;
-
-        //}
-
-        //private void HexadecimalDisplayCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        //{
-        //    hexadecimalSendCheckBox.IsChecked = false;
-
-        //}
+        /// <summary>
+        /// 十六进制字符串转换为浮点数
+        /// </summary>
+        /// <param name="HexStr"></param>
+        /// <returns></returns>
+        private static double HexStrToFloat(string HexStr)
+        {
+            if (HexStr == null)
+            {
+                throw new ArgumentNullException(nameof(HexStr));
+            }
+            string binData = Convert.ToString(Convert.ToInt32(HexStr, 16), 2).PadLeft(32, '0');
+            int binData_Sign = (1 - Convert.ToInt32(binData.Substring(0, 1), 2) * 2);
+            int binData_Exp = Convert.ToInt32(binData.Substring(1, 8), 2) - 127;
+            string binData_Mant = "1" + binData.Substring(9, 23);
+            if (binData_Exp >= 0)
+            {
+                binData_Mant = binData_Mant.Insert(binData_Exp + 1, ".");
+            }
+            else binData_Mant = binData_Mant.PadLeft(binData_Mant.Length - binData_Sign, '0').Insert(1, ".");
+            string[] binDataStr = binData_Mant.Split('.');
+            double flData = 0.0;
+            for (int i = 0; i < binDataStr[0].Length; i++)
+            {
+                double EXP = Math.Pow(2, binDataStr[0].Length - i - 1);
+                flData += Convert.ToInt32(binDataStr[0].Substring(i, 1)) * EXP;
+            }
+            for (int i = 0; i < binDataStr[1].Length; i++)
+            {
+                double EXP = Math.Pow(2, -i - 1);
+                flData += Convert.ToInt32(binDataStr[1].Substring(i, 1)) * EXP;
+            }
+            return flData;
+        }
+        /// <summary>
+        /// 文本解析面板清空
+        /// </summary>
+        private void ParseTextClear()
+        {
+            // 清空文本解析面板
+            frameHeader.Clear(); frameLength.Clear(); frameCommand.Clear();
+            frameAddress.Clear(); frameContent.Clear(); frameCRC.Clear();
+            // 将前景色改为黑色
+            frameHeader.Foreground = new SolidColorBrush(Colors.Black);
+            frameLength.Foreground = new SolidColorBrush(Colors.Black);
+            frameCommand.Foreground = new SolidColorBrush(Colors.Black);
+            frameAddress.Foreground = new SolidColorBrush(Colors.Black);
+            frameContent.Foreground = new SolidColorBrush(Colors.Black);
+            frameCRC.Foreground = new SolidColorBrush(Colors.Black);
+        }
+        /// <summary>
+        /// 仪表参数解析面板清空
+        /// </summary>
+        private void ParseParameterClear()
+        {
+            // 清空解析面板
+            resProtocol.Clear(); resAddress.Clear(); resVendor.Clear();
+            resType.Clear(); resGroup.Clear(); resFunctionData.Clear();
+            resSucRate.Clear(); resBatVol.Clear(); resSleepTime.Clear();
+            resStatue.Clear(); resData.Clear(); resCRC.Clear();
+            // 将前景色改为黑色
+            resProtocol.Foreground = new SolidColorBrush(Colors.Black);
+            resAddress.Foreground = new SolidColorBrush(Colors.Black);
+            resVendor.Foreground = new SolidColorBrush(Colors.Black);
+            resType.Foreground = new SolidColorBrush(Colors.Black);
+            resGroup.Foreground = new SolidColorBrush(Colors.Black);
+            resFunctionData.Foreground = new SolidColorBrush(Colors.Black);
+            resSucRate.Foreground = new SolidColorBrush(Colors.Black);
+            resBatVol.Foreground = new SolidColorBrush(Colors.Black);
+            resSleepTime.Foreground = new SolidColorBrush(Colors.Black);
+            resStatue.Foreground = new SolidColorBrush(Colors.Black);
+            resData.Foreground = new SolidColorBrush(Colors.Black);
+            resCRC.Foreground = new SolidColorBrush(Colors.Black);
+        }
+        #endregion
     }
-
-
-
-
-
 }
