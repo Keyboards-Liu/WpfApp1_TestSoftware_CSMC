@@ -70,10 +70,10 @@
                 <Label Grid.Row="2" Grid.Column="0" Margin="5,0" Content="校验位" VerticalAlignment="Center"/>
                 <Label Grid.Row="3" Grid.Column="0" Margin="5,0" Content="数据位" VerticalAlignment="Center"/>
                 <Label Grid.Row="4" Grid.Column="0" Margin="5,0" Content="停止位" VerticalAlignment="Center"/>
-                <StackPanel  Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal" Margin="5,0">
+                <DockPanel  Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Margin="5,0">
                     <Label Content="串口状态"/>
                     <Ellipse HorizontalAlignment="Center" Height="16" Stroke="White" Width="16" Name="serialPortStatusEllipse" Fill="Gray"/>
-                </StackPanel>
+                </DockPanel>
 
                 <ComboBox x:Name="portNameComboBox" Grid.Row="0" Grid.Column="1" Margin="5" SelectedIndex="0"/>
                 <ComboBox x:Name="baudRateComboBox" Grid.Row="1" Grid.Column="1" Margin="5" SelectedIndex="11">
@@ -129,7 +129,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel  Orientation="Vertical">
+                <StackPanel>
                     <CheckBox x:Name="autoClearCheckBox" Margin="5,5,10,5" Content="自动清空" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsChecked="True"/>
                     <Button Command="Save" Content="保存文件" Margin="5,5,10,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </StackPanel>
@@ -152,14 +152,14 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="0" Margin="5" VerticalAlignment="Center" Grid.ColumnSpan="2" Orientation="Horizontal" >
+                <DockPanel Grid.Column="0" Grid.Row="0" Margin="5" VerticalAlignment="Center" Grid.ColumnSpan="2" >
                     <Label VerticalAlignment="Center" Content="自动发送周期"/>
                     <TextBox x:Name="autoSendCycleTextBox" Margin="0" Text="1000" MinWidth="66" VerticalAlignment="Center"/>
                     <Label Content="毫秒" Margin="0" VerticalAlignment="Center"/>
-                </StackPanel>
+                </DockPanel>
 
                 <Border  Grid.Column="0" Grid.Row="1" Margin="5" VerticalAlignment="Center">
-                    <StackPanel  Orientation="Vertical">
+                    <StackPanel>
                         <CheckBox x:Name="autoSendCheckBox" Margin="5" VerticalAlignment="Center" Content="自动发送" Checked="AutoSendCheckBox_Checked" Unchecked="AutoSendCheckBox_Unchecked"/>
                         <!--<CheckBox x:Name="hexadecimalSendCheckBox" Checked="HexadecimalSendCheckBox_Checked" Unchecked="HexadecimalSendCheckBox_Unchecked" Margin="5" VerticalAlignment="Center" Content="十六进制发送" IsChecked="True"/>-->
                         <Button x:Name="clearSendButton" Margin="5" Content="清空重填" Click="ClearSendButton_Click"/>
@@ -174,10 +174,10 @@
                     </Button.ToolTip>
                 </Button>
 
-                <StackPanel Grid.Column="0" Grid.Row="2" Margin="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                <DockPanel Grid.Column="0" Grid.Row="2" Margin="0" Grid.ColumnSpan="2">
                     <Label Content="文件路径" Margin="5" VerticalAlignment="Center"/>
                     <TextBox x:Name="fileNameTextBox" IsReadOnly="True" Margin="0" Text="选择文件" HorizontalContentAlignment="Center" Width="150" VerticalAlignment="Center"/>
-                </StackPanel>
+                </DockPanel>
             </Grid>
         </GroupBox>
         <!--接收文本面板-->
@@ -201,30 +201,30 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                <DockPanel Grid.Column="0" Grid.Row="0" Margin="5,0">
                     <Label Content="帧头" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameHeader" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="frameHeader" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="0" Margin="5,0">
                     <Label Content="长度域" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameLength" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="frameLength" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="0" Margin="5,0">
                     <Label Content="命令域" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameCommand" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="frameCommand" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="0" Grid.Row="1" Margin="5,0">
                     <Label Content="数据地址域" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameAddress" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="frameAddress" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="1" Margin="5,0">
                     <Label Content="数据内容域" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name ="frameContent"  IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name ="frameContent"  IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="1" Margin="5,0">
                     <Label Content="校验码" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="frameCRC" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
+                    <TextBox x:Name="frameCRC" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
             </Grid>
         </GroupBox>
 
@@ -242,54 +242,54 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="0" Margin="5,0"  Orientation="Horizontal">
+                <DockPanel Grid.Column="0" Grid.Row="0" Margin="5,0" >
                     <Label Content="通信协议" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resProtocol" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resProtocol" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="0" Margin="5,0">
                     <Label Content="网络地址" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resAddress" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="0" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resAddress" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="0" Margin="5,0">
                     <Label Content="厂商号" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resVendor" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="0" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resVendor" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="0" Grid.Row="1" Margin="5,0">
                     <Label Content="仪表类型" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resType" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resType" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="1" Margin="5,0">
                     <Label Content="仪表组号" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resGroup" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="1" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resGroup" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="1" Margin="5,0">
                     <Label Content="数据类型" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resFunctionData" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="0" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resFunctionData" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="0" Grid.Row="2" Margin="5,0">
                     <Label Content="通信效率" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resSucRate" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resSucRate" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="2" Margin="5,0">
                     <Label Content="电池电压" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resBatVol" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="2" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resBatVol" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="2" Margin="5,0">
                     <Label Content="休眠时间" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resSleepTime" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="0" Grid.Row="3" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resSleepTime" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="0" Grid.Row="3" Margin="5,0">
                     <Label Content="仪表状态" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resStatue" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Grid.Row="3" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resStatue" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center"/>
+                </DockPanel>
+                <DockPanel Grid.Column="1" Grid.Row="3" Margin="5,0">
                     <Label Content="实时数据" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resData" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Grid.Row="3" Margin="5,0" Orientation="Horizontal">
+                    <TextBox x:Name="resData" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
+                <DockPanel Grid.Column="2" Grid.Row="3" Margin="5,0">
                     <Label Content="CRC校验" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resCRC" IsReadOnly="True" Width="80" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
-                </StackPanel>
+                    <TextBox x:Name="resCRC" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" />
+                </DockPanel>
             </Grid>
         </GroupBox>
         <!--发送文本面板-->
