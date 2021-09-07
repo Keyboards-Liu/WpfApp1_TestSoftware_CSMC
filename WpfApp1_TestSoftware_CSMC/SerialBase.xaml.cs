@@ -766,6 +766,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     {
                         serialPort.DiscardOutBuffer();
                         MessageBox.Show("字节越界，请逐个字节输入！", "Error");
+                        autoSendCheckBox.IsChecked = false;// 关闭自动发送
                     }
                 }
                 //foreach(byte b in sendBuffer)
