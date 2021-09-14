@@ -11,6 +11,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace WpfApp1_TestSoftware_CSMC
 {
@@ -116,6 +118,9 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 // 检测有效串口，去掉重复串口
                 string[] serialPortName = SerialPort.GetPortNames().Distinct().ToArray();
+                // 如果没有运行
+                    //AddPortName();
+                // 如果正在运行
                 if (turnOnButton.IsChecked == true)
                 {
                     // 在有效串口号中遍历当前打开的串口号
@@ -130,7 +135,7 @@ namespace WpfApp1_TestSoftware_CSMC
                     portNameComboBox.Items.Remove(serialPort.PortName);
                     portNameComboBox.SelectedIndex = 0;
                     // 输出提示信息
-                    statusTextBlock.Text = "串口已失效";
+                    statusTextBlock.Text = "串口失效，已自动断开";
                 }
                 else
                 {
@@ -204,6 +209,10 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 // 异常时显示提示文字
                 statusTextBlock.Text = "开启串口出错！";
+                serialPort.Close();
+                autoSendTimer.Stop();
+                turnOnButton.IsChecked = false;
+                SerialSettingControlState(true);
             }
         }
         /// <summary>
@@ -227,6 +236,7 @@ namespace WpfApp1_TestSoftware_CSMC
             {
                 // 异常时显示提示文字
                 statusTextBlock.Text = "关闭串口出错！";
+                turnOnButton.IsChecked = true;
             }
         }
         #endregion
@@ -661,10 +671,12 @@ namespace WpfApp1_TestSoftware_CSMC
                                 // 实时数据
                                 try
                                 {
+                                    string frameresData = frameContent.Text.Substring(54, 5).Replace(" ", "").TrimStart('0');
+                                    resData.Text = frameresData + "MPa";
                                     // 十六进制字符串转换为浮点数字符串
-                                    string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
-                                    double flFrameData = HexStrToFloat(frameresData);
-                                    resData.Text = flFrameData.ToString();
+                                    //string frameresData = frameContent.Text.Substring(48, 11).Replace(" ", "");
+                                    //double flFrameData = HexStrToFloat(frameresData);
+                                    //resData.Text = flFrameData.ToString();
                                 }
                                 catch
                                 {
@@ -693,6 +705,10 @@ namespace WpfApp1_TestSoftware_CSMC
                 statusTextBlock.Text = "参数解析出错！";
                 turnOnButton.IsChecked = false;
             }
+            //string strConn = @"Data Source=.;Initial Catalog=Test; integrated security=True;";
+            //SqlConnection conn = new SqlConnection(strConn);
+
+
         }
         /// <summary>
         /// 接收窗口清空按钮
@@ -811,7 +827,7 @@ namespace WpfApp1_TestSoftware_CSMC
         /// <param name="e"></param>
         private void AutoSendTimer_Tick(object sender, EventArgs e)
         {
-                        autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
+            autoSendTimer.Interval = new TimeSpan(0, 0, 0, 0, Convert.ToInt32(autoSendCycleTextBox.Text));
             // 发送数据
             SerialPortSend();
             // 设置新的定时时间           
