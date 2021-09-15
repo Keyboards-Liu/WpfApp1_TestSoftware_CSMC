@@ -668,9 +668,22 @@ namespace WpfApp1_TestSoftware_CSMC
                                     turnOnButton.IsChecked = false;
                                     return;
                                 }
+                                // 运行时间
+                                try
+                                {
+                                    resTime.Text = Convert.ToInt32(frameContent.Text.Substring(48, 5).Replace(" ", ""), 16).ToString() + "小时";
+                                }
+                                catch
+                                {
+                                    // 异常时显示提示文字
+                                    statusTextBlock.Text = "运行时间解析出错！";
+                                    turnOnButton.IsChecked = false;
+                                    return;
+                                }
                                 // 实时数据
                                 try
                                 {
+
                                     string frameresData = frameContent.Text.Substring(54, 5).Replace(" ", "").TrimStart('0');
                                     resData.Text = frameresData + "MPa";
                                     // 十六进制字符串转换为浮点数字符串

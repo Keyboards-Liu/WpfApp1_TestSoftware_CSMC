@@ -37,7 +37,7 @@
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <!--半固定面板-->
-            <RowDefinition Height="100*"/>
+            <RowDefinition Height="120*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -370,13 +370,18 @@
                     <TextBox x:Name="resStatue" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" MinWidth="80"/>
                 </DockPanel>
                 <DockPanel Margin="5,0">
-                    <Label Content="CRC校验" VerticalAlignment="Center" Width="80"/>
-                    <TextBox x:Name="resCRC" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" MinWidth="80"/>
+                    <Label Content="运行时间" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="resTime" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" MinWidth="80"/>
                 </DockPanel>
                 <DockPanel Margin="5,0">
                     <Label Content="实时数据" VerticalAlignment="Center" Width="80"/>
                     <TextBox x:Name="resData" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" MinWidth="80"/>
+                </DockPanel>                
+                <DockPanel Margin="5,0">
+                    <Label Content="CRC校验" VerticalAlignment="Center" Width="80"/>
+                    <TextBox x:Name="resCRC" IsReadOnly="True" HorizontalContentAlignment="Center" VerticalAlignment="Center" MinWidth="80"/>
                 </DockPanel>
+
             </WrapPanel>
         </GroupBox>
         <!--发送文本面板-->
