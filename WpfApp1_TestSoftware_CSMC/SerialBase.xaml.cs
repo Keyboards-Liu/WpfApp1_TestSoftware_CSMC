@@ -357,13 +357,13 @@ namespace WpfApp1_TestSoftware_CSMC
                                     // 通信协议
                                     try
                                     {
-                                        // 1 0x0001 ZigBee SZ9-GRM V3.01油田专用通讯协议
+                                        // 1 0x0001 ZigBee SZ9-GRM V3.01油田专用通讯协议（国产四信）
                                         string frameProtocol = frameContent.Text.Substring(0, 5).Replace(" ", "");
                                         int intFrameProtocol = Convert.ToInt32(frameProtocol, 16);
                                         switch (intFrameProtocol)
                                         {
                                             case 0x0001:
-                                                resProtocol.Text = "ZigBee SZ9-GRM V3.01油田专用通讯协议";
+                                                resProtocol.Text = "ZigBee SZ9-GRM V3.01油田专用通讯协议（国产四信）";
                                                 break;
                                             default:
                                                 resProtocol.Text = "未知";
@@ -798,9 +798,9 @@ namespace WpfApp1_TestSoftware_CSMC
                         autoSendCheckBox.IsChecked = false;// 关闭自动发送
                     }
                 }
-                //foreach(byte b in sendBuffer)
+                //foreach (byte b in sendBuffer)
                 //{
-                //Console.Write(b.ToString("X2"));
+                //    Console.Write(b.ToString("X2"));
                 //}
                 //Console.WriteLine("");
 
